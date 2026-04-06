@@ -17,8 +17,9 @@ export default function MainLayout({
   return (
     <div
       style={{
-        height: "100vh",
+        flex: 1,
         display: "flex",
+        height: "100%",
         flexDirection: "column",
         background: "#060912",
         overflow: "hidden",

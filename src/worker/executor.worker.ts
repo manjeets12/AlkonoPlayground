@@ -197,6 +197,7 @@ self.onmessage = async (
 
       // Suppress "bundle contains dynamic require" warnings for RN internals
       logLevel: "silent",
+      platform: "browser", // ✅
     });
 
     const code = result.outputFiles[0].text;

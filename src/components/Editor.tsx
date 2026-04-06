@@ -31,6 +31,7 @@ export default function Editor({ code, onChange }: Props) {
             fontSize: "14px",
             backgroundColor: "#0b1220",
             color: "#e5e7eb",
+            textAlign: "left", // Force left alignment here
           },
 
           ".cm-editor": {

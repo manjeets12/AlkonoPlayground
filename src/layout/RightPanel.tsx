@@ -47,8 +47,7 @@ const RightPanel = forwardRef<HTMLIFrameElement, RightPanelProps>(
     return (
       <div
         style={{
-          width: "42%",
-          minWidth: 380,
+          flex: 0.45,
           display: "flex",
           flexDirection: "column",
           background: "#0a0f1e",

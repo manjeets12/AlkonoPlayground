@@ -26,8 +26,7 @@ export default function LeftPanel({
   return (
     <aside
       style={{
-        width: 220,
-        minWidth: 180,
+        flex: 0.2,
         background: "#0a0f1e",
         borderRight: "1px solid #1e2d4a",
         display: "flex",
