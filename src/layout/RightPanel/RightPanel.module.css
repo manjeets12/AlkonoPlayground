@@ -161,3 +161,51 @@
   overflow-y: auto;
   background: #060912;
 }
+
+.runButtonActive {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.runButtonNormal {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.staleIndicator {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: #3d2a08;
+  border: 1px solid #f5a623;
+  color: #f5a623;
+  letter-spacing: 0.04em;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.statusPip {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.previewHeader {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  height: 28px;
+  border-bottom: 1px solid #1e2d4a;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #445577;
+}

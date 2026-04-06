@@ -5,16 +5,23 @@ export type Framework = "react" | "react-native";
 interface TopBarProps {
   framework: Framework;
   onChange: (fw: Framework) => void;
+  onFormat: () => void;
+  onToggleFullscreen: () => void;
 }
 
-export default function TopBar({ framework, onChange }: TopBarProps) {
+export default function TopBar({
+  framework,
+  onChange,
+  onFormat,
+  onToggleFullscreen,
+}: TopBarProps) {
   return (
     <div className={styles.root}>
       <span className={styles.label}>Language</span>
-      
+
       <div className={styles.selectWrapper}>
-        <select 
-          value={framework} 
+        <select
+          value={framework}
           onChange={(e) => onChange(e.target.value as Framework)}
           className={styles.select}
         >
@@ -24,14 +31,46 @@ export default function TopBar({ framework, onChange }: TopBarProps) {
         <span className={styles.chevron}>▼</span>
       </div>
 
-      <i className={styles.infoIcon} title="Select the execution framework">i</i>
+      <i className={styles.infoIcon} title="Select the execution framework">
+        i
+      </i>
 
       <div className={styles.spacer} />
 
-      <svg 
-        className={styles.settingsIcon} 
-        width="16" height="16" viewBox="0 0 24 24" fill="none" 
-        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      <button
+        className={styles.button}
+        onClick={onFormat}
+        title="Format code with Prettier"
+      >
+        ✨ Format
+      </button>
+
+      <button
+        className={`${styles.button} ${styles.disabled}`}
+        disabled
+        title="Theme toggle (coming soon)"
+      >
+        🎨 Theme
+      </button>
+
+      <button
+        className={styles.button}
+        onClick={onToggleFullscreen}
+        title="Toggle fullscreen editor"
+      >
+        ⛶ Fullscreen
+      </button>
+
+      <svg
+        className={styles.settingsIcon}
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
         <circle cx="12" cy="12" r="3"></circle>
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>

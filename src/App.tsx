@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import { useFileSystem } from "./hooks/useFileSystem";
 import { useExecutor } from "./hooks/useExecutor";
 import MainLayout from "./layout/MainLayout";
@@ -8,6 +8,7 @@ import Editor from "./components/Editor";
 import TabBar from "./components/TabBar";
 import TopBar from "./components/TopBar";
 import type { Framework } from "./components/TopBar/TopBar";
+import styles from "./App.module.css";
 
 const PROBLEM = `Build a card-flip memory game.
 
@@ -24,9 +25,17 @@ Requirements:
 
 export default function App() {
   const [framework, setFramework] = useState<Framework>("react");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
 
   // ── File system ────────────────────────────────────────────────────────────
   const fs = useFileSystem();
+
+  // ── Update main.tsx when framework changes ─────────────────────────────────
+  useEffect(() => {
+    fs.updateMainContent(framework);
+  }, [framework, fs]);
 
   // ── iframe ref — shared between Preview (renders it) and useExecutor (writes srcdoc) ──
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -49,31 +58,93 @@ export default function App() {
     run(fs.snapshot(), framework);
   }, [run, fs, framework]);
 
+  const handleFormat = useCallback(() => {
+    // Placeholder for format functionality
+  }, []);
+
+  const handleToggleFullscreen = useCallback(async () => {
+    try {
+      if (!isFullscreen) {
+        // Enter fullscreen
+        await document.documentElement.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        // Exit fullscreen
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.error("Fullscreen toggle error:", error);
+    }
+  }, [isFullscreen]);
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <MainLayout
       status={status}
       leftPanel={
-        <LeftPanel
-          files={fs.files}
-          activeFile={fs.activeFile}
-          problem={PROBLEM}
-          onOpen={fs.openFile}
-          onCreate={fs.createFile}
-          onDelete={fs.deleteFile}
-          onRename={fs.renameFile}
-        />
+        !isFullscreen &&
+        isLeftPanelOpen && (
+          <LeftPanel
+            files={fs.files}
+            activeFile={fs.activeFile}
+            problem={PROBLEM}
+            isReadOnly={fs.isReadOnly}
+            onOpen={fs.openFile}
+            onCreate={fs.createFile}
+            onDelete={fs.deleteFile}
+            onRename={fs.renameFile}
+          />
+        )
       }
       editor={
         <>
-          <TopBar framework={framework} onChange={setFramework} />
-          <TabBar
-            openTabs={fs.openTabs}
-            activeFile={fs.activeFile}
-            onSelect={fs.openFile}
-            onClose={fs.closeTab}
-          />
+          {!isFullscreen && (
+            <TopBar
+              framework={framework}
+              onChange={setFramework}
+              onFormat={handleFormat}
+              onToggleFullscreen={handleToggleFullscreen}
+            />
+          )}
+          {!isFullscreen && (
+            <TabBar
+              openTabs={fs.openTabs}
+              activeFile={fs.activeFile}
+              onSelect={fs.openFile}
+              onClose={fs.closeTab}
+            />
+          )}
+          {isFullscreen && (
+            <button
+              onClick={handleToggleFullscreen}
+              className={styles.exitButton}
+              title="Exit fullscreen"
+            >
+              ✕ Exit
+            </button>
+          )}
+          {!isFullscreen && (
+            <>
+              <button
+                onClick={() => setIsLeftPanelOpen((v) => !v)}
+                className={styles.leftPanelToggle}
+                title={isLeftPanelOpen ? "Hide left panel" : "Show left panel"}
+              >
+                {isLeftPanelOpen ? "◀" : "▶"}
+              </button>
+              <button
+                onClick={() => setIsRightPanelOpen((v) => !v)}
+                className={styles.rightPanelToggle}
+                title={
+                  isRightPanelOpen ? "Hide right panel" : "Show right panel"
+                }
+              >
+                {isRightPanelOpen ? "▶" : "◀"}
+              </button>
+            </>
+          )}
           <Editor
             key={fs.activeFile} // remount when file switches — avoids stale CodeMirror state
             code={fs.getContent(fs.activeFile)}
@@ -82,15 +153,18 @@ export default function App() {
         </>
       }
       rightPanel={
-        <RightPanel
-          ref={iframeRef}
-          status={status}
-          logs={logs}
-          isStale={isStale}
-          lastRanAt={lastRanAt}
-          onRun={handleRun}
-          onClearLogs={clearLogs}
-        />
+        !isFullscreen &&
+        isRightPanelOpen && (
+          <RightPanel
+            ref={iframeRef}
+            status={status}
+            logs={logs}
+            isStale={isStale}
+            lastRanAt={lastRanAt}
+            onRun={handleRun}
+            onClearLogs={clearLogs}
+          />
+        )
       }
     />
   );

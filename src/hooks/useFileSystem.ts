@@ -3,11 +3,14 @@ import { useState, useCallback } from "react";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type FileMap = Record<string, string>; // path → content
+export type ReadOnlyFiles = Set<string>; // paths that cannot be edited/deleted
+export type Framework = "react" | "react-native";
 
 export interface FileSystemState {
   files: FileMap;
   activeFile: string;
   openTabs: string[];
+  readOnlyFiles: ReadOnlyFiles;
 }
 
 export interface FileSystemActions {
@@ -26,14 +29,70 @@ export interface FileSystemActions {
 
   // Bundler snapshot: flat map of all files
   snapshot: () => FileMap;
+
+  // Check if file is read-only
+  isReadOnly: (path: string) => boolean;
+
+  // Update main.tsx content for a specific framework
+  updateMainContent: (framework: Framework) => void;
 }
 
 // ─── Default scaffold ─────────────────────────────────────────────────────────
 
-const DEFAULT_FILES: FileMap = {
-  "App.tsx": `import React from 'react';
+function getMainContent(framework: Framework): string {
+  if (framework === "react-native") {
+    return `import React from 'react';
+import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 
-export default function App() {
+export default function Main() {
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.h1}>Hello World (React Native)</Text>
+        <Text style={styles.h2}>Tap to interact</Text>
+        <Text style={styles.p}>
+          This is a React Native component running in the integrated execution environment!
+        </Text>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
+  content: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    gap: 12,
+  },
+  h1: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+    margin: 0,
+  },
+  h2: {
+    fontSize: 24,
+    color: '#94a3b8',
+    margin: 0,
+  },
+  p: {
+    fontSize: 16,
+    color: '#64748b',
+    marginTop: 20,
+  },
+});
+`;
+  }
+
+  // Default React content
+  return `import React from 'react';
+
+export default function Main() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '24px' }}>
       <h1 style={{ fontSize: '32px', margin: 0 }}>Hello World (32px)</h1>
@@ -44,6 +103,18 @@ export default function App() {
       </p>
     </div>
   );
+}
+`;
+}
+
+const DEFAULT_FILES: FileMap = {
+  "main.tsx": getMainContent("react"),
+
+  "App.tsx": `import React from 'react';
+import Main from './main';
+
+export default function App() {
+  return <Main />;
 }
 `,
 
@@ -108,14 +179,19 @@ export function shuffle<T>(arr: T[]): T[] {
 
 export function useFileSystem(): FileSystemState & FileSystemActions {
   const [files, setFiles] = useState<FileMap>({ ...DEFAULT_FILES });
-  const [activeFile, setActiveFile] = useState("App.tsx");
-  const [openTabs, setOpenTabs] = useState<string[]>(["App.tsx"]);
+  const [activeFile, setActiveFile] = useState("main.tsx");
+  const [openTabs, setOpenTabs] = useState<string[]>(["main.tsx"]);
+  const readOnlyFiles: ReadOnlyFiles = new Set(["App.tsx"]); // Files that cannot be edited/deleted
 
   // ── Content ──────────────────────────────────────────────────────────────
 
   const getContent = useCallback((path: string) => files[path] ?? "", [files]);
 
   const setContent = useCallback((path: string, content: string) => {
+    if (readOnlyFiles.has(path)) {
+      console.warn(`Cannot edit read-only file: ${path}`);
+      return;
+    }
     setFiles((prev) => ({ ...prev, [path]: content }));
   }, []);
 
@@ -132,6 +208,10 @@ export function useFileSystem(): FileSystemState & FileSystemActions {
 
   const deleteFile = useCallback(
     (path: string) => {
+      if (readOnlyFiles.has(path)) {
+        console.warn(`Cannot delete read-only file: ${path}`);
+        return;
+      }
       setFiles((prev) => {
         const next = { ...prev };
         delete next[path];
@@ -184,11 +264,19 @@ export function useFileSystem(): FileSystemState & FileSystemActions {
   // Returns the current file map by reference — call at run-time, not during render
   const snapshot = useCallback((): FileMap => ({ ...files }), [files]);
 
+  const isReadOnly = useCallback((path: string) => readOnlyFiles.has(path), []);
+
+  const updateMainContent = useCallback((framework: Framework) => {
+    const newContent = getMainContent(framework);
+    setFiles((prev) => ({ ...prev, "main.tsx": newContent }));
+  }, []);
+
   return {
     // State
     files,
     activeFile,
     openTabs,
+    readOnlyFiles,
     // Actions
     getContent,
     setContent,
@@ -198,5 +286,7 @@ export function useFileSystem(): FileSystemState & FileSystemActions {
     openFile,
     closeTab,
     snapshot,
+    isReadOnly,
+    updateMainContent,
   };
 }

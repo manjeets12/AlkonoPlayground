@@ -7,6 +7,7 @@ interface LeftPanelProps {
   files: FileMap;
   activeFile: string;
   problem?: string;
+  isReadOnly: (path: string) => boolean;
   onOpen: (path: string) => void;
   onCreate: (path: string) => void;
   onDelete: (path: string) => void;
@@ -17,6 +18,7 @@ export default function LeftPanel({
   files,
   activeFile,
   problem,
+  isReadOnly,
   onOpen,
   onCreate,
   onDelete,
@@ -64,6 +66,7 @@ export default function LeftPanel({
         <FileExplorer
           files={files}
           activeFile={activeFile}
+          isReadOnly={isReadOnly}
           onOpen={onOpen}
           onCreate={onCreate}
           onDelete={onDelete}

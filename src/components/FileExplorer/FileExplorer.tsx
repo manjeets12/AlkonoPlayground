@@ -7,6 +7,7 @@ import type { FileMap } from "../../hooks/useFileSystem";
 interface FileExplorerProps {
   files: FileMap;
   activeFile: string;
+  isReadOnly: (path: string) => boolean;
   onOpen: (path: string) => void;
   onCreate: (path: string) => void;
   onDelete: (path: string) => void;
@@ -105,6 +106,7 @@ interface TreeNodeRowProps {
   node: TreeNode;
   depth: number;
   activeFile: string;
+  isReadOnly: (path: string) => boolean;
   onOpen: (path: string) => void;
   onDelete: (path: string) => void;
   onRename: (oldPath: string, newPath: string) => void;
@@ -114,6 +116,7 @@ function TreeNodeRow({
   node,
   depth,
   activeFile,
+  isReadOnly,
   onOpen,
   onDelete,
   onRename,
@@ -124,11 +127,16 @@ function TreeNodeRow({
   const renameRef = useRef<HTMLInputElement>(null);
 
   const isActive = node.kind === "file" && node.path === activeFile;
+  const isFileReadOnly = node.kind === "file" && isReadOnly(node.path);
   const indent = 8 + depth * 14;
 
   function handleClick() {
     if (node.kind === "dir") setExpanded((v) => !v);
-    else onOpen(node.path);
+    else if (!isFileReadOnly) onOpen(node.path);
+    else
+      alert(
+        `"${node.name}" is a read-only file and cannot be opened for editing.`,
+      );
   }
 
   function startRename(e: React.MouseEvent) {
@@ -192,6 +200,19 @@ function TreeNodeRow({
           >
             {expanded ? "▼" : "▶"}
           </span>
+        ) : isFileReadOnly ? (
+          <span
+            style={{
+              color: "#f5a623",
+              fontSize: 10,
+              width: 12,
+              textAlign: "center",
+              flexShrink: 0,
+            }}
+            title="Read-only file"
+          >
+            🔒
+          </span>
         ) : (
           <FileIcon filename={node.name} />
         )}
@@ -218,35 +239,57 @@ function TreeNodeRow({
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
             }}
           >
             {node.name}
+            {isFileReadOnly && (
+              <span
+                style={{
+                  fontSize: 9,
+                  color: "#f5a623",
+                  flexShrink: 0,
+                }}
+                title="Read-only file"
+              >
+                🔒
+              </span>
+            )}
           </span>
         )}
 
         {/* Hover actions */}
-        <span
-          className="node-actions"
-          style={{ display: "none", gap: 2, marginLeft: "auto", flexShrink: 0 }}
-        >
-          <button
-            title="Rename"
-            onClick={startRename}
-            className={styles.closeButton}
+        {!isFileReadOnly && (
+          <span
+            className="node-actions"
+            style={{
+              display: "none",
+              gap: 2,
+              marginLeft: "auto",
+              flexShrink: 0,
+            }}
           >
-            ✎
-          </button>
-          {node.kind === "file" && (
             <button
-              title="Delete"
-              onClick={handleDelete}
-              style={{ color: "#f5524a" }}
+              title="Rename"
+              onClick={startRename}
               className={styles.closeButton}
             >
-              ✕
+              ✎
             </button>
-          )}
-        </span>
+            {node.kind === "file" && (
+              <button
+                title="Delete"
+                onClick={handleDelete}
+                style={{ color: "#f5524a" }}
+                className={styles.closeButton}
+              >
+                ✕
+              </button>
+            )}
+          </span>
+        )}
       </div>
 
       {/* Children */}
@@ -258,6 +301,7 @@ function TreeNodeRow({
               node={child}
               depth={depth + 1}
               activeFile={activeFile}
+              isReadOnly={isReadOnly}
               onOpen={onOpen}
               onDelete={onDelete}
               onRename={onRename}
@@ -274,6 +318,7 @@ function TreeNodeRow({
 export default function FileExplorer({
   files,
   activeFile,
+  isReadOnly,
   onOpen,
   onCreate,
   onDelete,
@@ -310,6 +355,7 @@ export default function FileExplorer({
             node={node}
             depth={0}
             activeFile={activeFile}
+            isReadOnly={isReadOnly}
             onOpen={onOpen}
             onDelete={onDelete}
             onRename={onRename}

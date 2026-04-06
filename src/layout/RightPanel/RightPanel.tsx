@@ -1,7 +1,6 @@
 import { forwardRef } from "react";
 import Preview from "../../components/Preview";
 import Logs from "../../components/Logs";
-import { typography } from "../../theme/typography";
 import type { ExecutionStatus, LogEntry } from "../../hooks/useExecutor";
 import styles from "./RightPanel.module.css";
 
@@ -45,10 +44,6 @@ const RightPanel = forwardRef<HTMLIFrameElement, RightPanelProps>(
             onClick={onRun}
             disabled={isRunning}
             className={styles.runButton}
-            style={{
-              opacity: isRunning ? 0.7 : 1,
-              cursor: isRunning ? "not-allowed" : "pointer",
-            }}
           >
             {/* Play triangle / loading square */}
             <span className={isRunning ? styles.stopIcon : styles.runIcon} />
@@ -57,60 +52,22 @@ const RightPanel = forwardRef<HTMLIFrameElement, RightPanelProps>(
 
           {/* Stale indicator — code changed since last run */}
           {isStale && (
-            <span
-              style={{
-                fontFamily: typography.fontFamily.mono,
-                fontSize: 9,
-                padding: "2px 7px",
-                borderRadius: 3,
-                background: "#3d2a08",
-                border: "1px solid #f5a623",
-                color: "#f5a623",
-                letterSpacing: "0.04em",
-              }}
-            >
-              ● unsaved changes
-            </span>
+            <span className={styles.staleIndicator}>● unsaved changes</span>
           )}
 
           {/* Spacer */}
-          <span style={{ flex: 1 }} />
+          <span className={styles.spacer} />
 
           {/* Execution status pill */}
           <span className={`${styles.statusBadge} ${sc.className}`}>
             {/* Pip */}
-            <span
-              style={{
-                width: 5,
-                height: 5,
-                borderRadius: "50%",
-                background: "currentColor",
-                flexShrink: 0,
-              }}
-            />
+            <span className={styles.statusPip} />
             {sc.label}
           </span>
         </div>
 
         {/* ── Preview header ────────────────────────────────────────── */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            padding: "0 12px",
-            height: 28,
-            borderBottom: "1px solid #1e2d4a",
-            flexShrink: 0,
-            fontFamily: typography.fontFamily.mono,
-            fontSize: 9,
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-            color: "#445577",
-          }}
-        >
-          Preview
-        </div>
+        <div className={styles.previewHeader}>Preview</div>
 
         {/* ── Preview (iframe ref forwarded) ────────────────────────── */}
         <Preview ref={ref} status={status} lastRanAt={lastRanAt} />

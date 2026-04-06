@@ -3,9 +3,9 @@ import type { ExecutionStatus } from "../../hooks/useExecutor";
 import styles from "./MainLayout.module.css";
 
 interface MainLayoutProps {
-  leftPanel: ReactNode;
+  leftPanel?: ReactNode;
   editor: ReactNode;
-  rightPanel: ReactNode;
+  rightPanel?: ReactNode;
   status: ExecutionStatus;
 }
 
