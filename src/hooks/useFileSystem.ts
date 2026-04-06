@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 
 export type FileMap = Record<string, string>; // path → content
 export type ReadOnlyFiles = Set<string>; // paths that cannot be edited/deleted
+export type Directories = Set<string>; // paths that are directories
 export type Framework = "react" | "react-native";
 
 export interface FileSystemState {
@@ -11,6 +12,7 @@ export interface FileSystemState {
   activeFile: string;
   openTabs: string[];
   readOnlyFiles: ReadOnlyFiles;
+  directories: Directories;
 }
 
 export interface FileSystemActions {
@@ -181,6 +183,7 @@ export function useFileSystem(): FileSystemState & FileSystemActions {
   const [files, setFiles] = useState<FileMap>({ ...DEFAULT_FILES });
   const [activeFile, setActiveFile] = useState("main.tsx");
   const [openTabs, setOpenTabs] = useState<string[]>(["main.tsx"]);
+  const [directories, setDirectories] = useState<Directories>(new Set());
   const readOnlyFiles: ReadOnlyFiles = new Set(["App.tsx"]); // Files that cannot be edited/deleted
 
   // ── Content ──────────────────────────────────────────────────────────────
@@ -198,12 +201,25 @@ export function useFileSystem(): FileSystemState & FileSystemActions {
   // ── CRUD ─────────────────────────────────────────────────────────────────
 
   const createFile = useCallback((path: string, content = "") => {
+    // Check if this is a directory (ends with .gitkeep)
+    const isDir = path.endsWith("/.gitkeep");
+    const dirPath = isDir ? path.replace("/.gitkeep", "") : null;
+
     setFiles((prev) => {
       if (prev[path] !== undefined) return prev; // already exists
       return { ...prev, [path]: content };
     });
-    setOpenTabs((prev) => (prev.includes(path) ? prev : [...prev, path]));
-    setActiveFile(path);
+
+    // Mark directory if this is a .gitkeep file
+    if (isDir && dirPath) {
+      setDirectories((prev) => new Set([...prev, dirPath]));
+    }
+
+    // Only open tabs for actual files, not .gitkeep
+    if (!isDir) {
+      setOpenTabs((prev) => (prev.includes(path) ? prev : [...prev, path]));
+      setActiveFile(path);
+    }
   }, []);
 
   const deleteFile = useCallback(
@@ -277,6 +293,7 @@ export function useFileSystem(): FileSystemState & FileSystemActions {
     activeFile,
     openTabs,
     readOnlyFiles,
+    directories,
     // Actions
     getContent,
     setContent,

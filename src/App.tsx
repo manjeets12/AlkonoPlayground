@@ -88,6 +88,7 @@ export default function App() {
         isLeftPanelOpen && (
           <LeftPanel
             files={fs.files}
+            directories={fs.directories}
             activeFile={fs.activeFile}
             problem={PROBLEM}
             isReadOnly={fs.isReadOnly}

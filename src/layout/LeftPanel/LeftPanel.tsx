@@ -1,10 +1,11 @@
 import { useState } from "react";
 import FileExplorer from "../../components/FileExplorer";
-import type { FileMap } from "../../hooks/useFileSystem";
+import type { FileMap, Directories } from "../../hooks/useFileSystem";
 import styles from "./LeftPanel.module.css";
 
 interface LeftPanelProps {
   files: FileMap;
+  directories: Directories;
   activeFile: string;
   problem?: string;
   isReadOnly: (path: string) => boolean;
@@ -16,6 +17,7 @@ interface LeftPanelProps {
 
 export default function LeftPanel({
   files,
+  directories,
   activeFile,
   problem,
   isReadOnly,
@@ -65,6 +67,7 @@ export default function LeftPanel({
       <div className={styles.explorerScroll}>
         <FileExplorer
           files={files}
+          directories={directories}
           activeFile={activeFile}
           isReadOnly={isReadOnly}
           onOpen={onOpen}

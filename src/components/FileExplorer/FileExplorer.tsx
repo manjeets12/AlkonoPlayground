@@ -1,11 +1,12 @@
 import { useState, useRef } from "react";
 import styles from "./FileExplorer.module.css";
-import type { FileMap } from "../../hooks/useFileSystem";
+import type { FileMap, Directories } from "../../hooks/useFileSystem";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface FileExplorerProps {
   files: FileMap;
+  directories: Directories;
   activeFile: string;
   isReadOnly: (path: string) => boolean;
   onOpen: (path: string) => void;
@@ -31,7 +32,7 @@ interface TreeFile {
 
 type TreeNode = TreeDir | TreeFile;
 
-function buildTree(files: FileMap): TreeDir {
+function buildTree(files: FileMap, directories: Directories): TreeDir {
   const root: TreeDir = { kind: "dir", name: "/", path: "", children: [] };
 
   for (const path of Object.keys(files).sort()) {
@@ -55,6 +56,26 @@ function buildTree(files: FileMap): TreeDir {
         }
         current = dir;
       }
+    }
+  }
+
+  // Add directories from the directories Set
+  for (const dirPath of directories) {
+    const parts = dirPath.split("/").filter(Boolean);
+    let current = root;
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const currentPath = parts.slice(0, i + 1).join("/");
+
+      let dir = current.children.find(
+        (c): c is TreeDir => c.kind === "dir" && c.name === part,
+      );
+      if (!dir) {
+        dir = { kind: "dir", name: part, path: currentPath, children: [] };
+        current.children.push(dir);
+      }
+      current = dir;
     }
   }
 
@@ -106,8 +127,10 @@ interface TreeNodeRowProps {
   node: TreeNode;
   depth: number;
   activeFile: string;
+  selectedPath: string;
   isReadOnly: (path: string) => boolean;
   onOpen: (path: string) => void;
+  onSelect: (path: string) => void;
   onDelete: (path: string) => void;
   onRename: (oldPath: string, newPath: string) => void;
 }
@@ -116,8 +139,10 @@ function TreeNodeRow({
   node,
   depth,
   activeFile,
+  selectedPath,
   isReadOnly,
   onOpen,
+  onSelect,
   onDelete,
   onRename,
 }: TreeNodeRowProps) {
@@ -127,10 +152,12 @@ function TreeNodeRow({
   const renameRef = useRef<HTMLInputElement>(null);
 
   const isActive = node.kind === "file" && node.path === activeFile;
+  const isSelected = node.path === selectedPath;
   const isFileReadOnly = node.kind === "file" && isReadOnly(node.path);
   const indent = 8 + depth * 14;
 
   function handleClick() {
+    onSelect(node.path);
     if (node.kind === "dir") setExpanded((v) => !v);
     else if (!isFileReadOnly) onOpen(node.path);
     else
@@ -170,7 +197,7 @@ function TreeNodeRow({
       <div
         role={node.kind === "file" ? "button" : "treeitem"}
         tabIndex={0}
-        className={`${styles.fileItem} ${isActive ? styles.fileItemActive : ""}`}
+        className={`${styles.fileItem} ${isActive ? styles.fileItemActive : ""} ${isSelected ? styles.fileItemSelected : ""}`}
         onClick={handleClick}
         onKeyDown={(e) => e.key === "Enter" && handleClick()}
         onMouseEnter={(e) => {
@@ -301,8 +328,10 @@ function TreeNodeRow({
               node={child}
               depth={depth + 1}
               activeFile={activeFile}
+              selectedPath={selectedPath}
               isReadOnly={isReadOnly}
               onOpen={onOpen}
+              onSelect={onSelect}
               onDelete={onDelete}
               onRename={onRename}
             />
@@ -317,6 +346,7 @@ function TreeNodeRow({
 
 export default function FileExplorer({
   files,
+  directories,
   activeFile,
   isReadOnly,
   onOpen,
@@ -326,12 +356,36 @@ export default function FileExplorer({
 }: FileExplorerProps) {
   const [creating, setCreating] = useState<"file" | "dir" | null>(null);
   const [newName, setNewName] = useState("");
+  const [selectedPath, setSelectedPath] = useState(""); // Track selected file/folder
+  const [parentDir, setParentDir] = useState(""); // Track where to create
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const tree = buildTree(files);
+  const tree = buildTree(files, directories);
+
+  function getParentDirForSelected(): string {
+    if (!selectedPath) return ""; // Root
+
+    // Simple heuristic: if last part has a dot, it's a file; otherwise it's a folder
+    const lastPart = selectedPath.split("/").pop() ?? "";
+    if (lastPart.includes(".")) {
+      // It's a file, get parent directory
+      const parts = selectedPath.split("/");
+      parts.pop();
+      return parts.join("/");
+    } else {
+      // It's a folder, create inside it
+      return selectedPath;
+    }
+  }
 
   function startCreate(kind: "file" | "dir") {
+    if (!selectedPath) {
+      alert("Please select a file or folder first");
+      return;
+    }
+    const dir = getParentDirForSelected();
     setCreating(kind);
+    setParentDir(dir);
     setNewName("");
     setTimeout(() => inputRef.current?.focus(), 0);
   }
@@ -339,14 +393,48 @@ export default function FileExplorer({
   function commitCreate() {
     const name = newName.trim();
     if (name) {
-      onCreate(name);
+      const fullPath = parentDir ? `${parentDir}/${name}` : name;
+
+      if (creating === "dir") {
+        // For directories, create a .gitkeep file inside to make the folder appear
+        onCreate(`${fullPath}/.gitkeep`);
+      } else {
+        // For files, create the file directly
+        onCreate(fullPath);
+      }
     }
     setCreating(null);
     setNewName("");
+    setParentDir("");
+  }
+
+  function handleItemSelect(path: string) {
+    setSelectedPath(path);
   }
 
   return (
     <div className={styles.root}>
+      {/* Header with title and action buttons */}
+      <div className={styles.header}>
+        <span className={styles.title}>Explorer</span>
+        <div className={styles.headerButtons}>
+          <button
+            onClick={() => startCreate("file")}
+            title="New File"
+            className={styles.headerButton}
+          >
+            📄
+          </button>
+          <button
+            onClick={() => startCreate("dir")}
+            title="New Folder"
+            className={styles.headerButton}
+          >
+            📁
+          </button>
+        </div>
+      </div>
+
       {/* File tree */}
       <div className={styles.scroll} role="tree">
         {tree.children.map((node) => (
@@ -355,8 +443,10 @@ export default function FileExplorer({
             node={node}
             depth={0}
             activeFile={activeFile}
+            selectedPath={selectedPath}
             isReadOnly={isReadOnly}
             onOpen={onOpen}
+            onSelect={handleItemSelect}
             onDelete={onDelete}
             onRename={onRename}
           />
@@ -389,28 +479,6 @@ export default function FileExplorer({
             />
           </div>
         )}
-      </div>
-
-      {/* Bottom toolbar */}
-      <div className={styles.toolbar}>
-        {(["file", "dir"] as const).map((kind) => (
-          <button
-            key={kind}
-            onClick={() => startCreate(kind)}
-            title={`New ${kind}`}
-            className={styles.createButton}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.borderColor = "#3b7ff5";
-              (e.target as HTMLElement).style.color = "#3b7ff5";
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.borderColor = "#1e2d4a";
-              (e.target as HTMLElement).style.color = "#445577";
-            }}
-          >
-            + {kind}
-          </button>
-        ))}
       </div>
     </div>
   );
