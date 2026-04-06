@@ -52,7 +52,7 @@ type WorkerMessage = WorkerSuccessMessage | WorkerErrorMessage;
  */
 function buildErrorIframeHTML(errorMessage: string): string {
   const safeMessage = errorMessage.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  
+
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -82,58 +82,29 @@ function buildErrorIframeHTML(errorMessage: string): string {
 </html>`;
 }
 
-function buildIframeHTML(bundledCode: string, framework: "react" | "react-native"): string {
-  const mountScript = framework === "react-native" 
-    ? `
-      const AppComponent = (window.App && window.App.default) || window.App || null;
-      if (!AppComponent) throw new Error('No default export found. Make sure App.tsx has: export default function App() { ... }');
-      
-      if (window.ReactNativeWeb && window.ReactNativeWeb.AppRegistry) {
-        window.ReactNativeWeb.AppRegistry.registerComponent('App', () => AppComponent);
-        window.ReactNativeWeb.AppRegistry.runApplication('App', {
-          initialProps: {},
-          rootTag: document.getElementById('root')
-        });
-      } else {
-        throw new Error('ReactNativeWeb / AppRegistry missing');
-      }
-    `
-    : `
-      const AppComponent = (window.App && window.App.default) || window.App || null;
-      if (!AppComponent) throw new Error('No default export found. Make sure App.tsx has: export default function App() { ... }');
-
-      const rootEl = document.getElementById('root');
-      rootEl.innerHTML = '<h1 style="color: yellow; padding: 20px;">Mounting framework...</h1>';
-      try {
-        const reactRoot = window.ReactDOM.createRoot(rootEl);
-        reactRoot.render(window.React.createElement(AppComponent));
-      } catch (e) {
-        rootEl.innerHTML = '<h1 style="color: red;">Crash: ' + e.message + '</h1>';
-        console.error(e);
-      }
-    `;
+function buildIframeHTML(
+  bundledCode: string,
+  framework: "react" | "react-native",
+): string {
+  const isRN = framework === "react-native";
 
   return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0b1220; height: 100vh; overflow: hidden; }
-    #root { height: 100vh; color: #e2e8f0; font-family: system-ui, sans-serif; }
+    html, body, #root { 
+      height: 100%; width: 100%; margin: 0; padding: 0; 
+      background: #0b1220; color: #ffffff; 
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
     #error-overlay {
-      display: none;
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(220, 38, 38, 0.95);
-      color: #fff;
-      font-family: Menlo, Monaco, Consolas, monospace;
-      padding: 20px;
-      z-index: 9999;
-      white-space: pre-wrap;
-      overflow: auto;
-      flex-direction: column;
+      display: none; position: fixed; inset: 0;
+      background: #7f1d1d; color: #fecaca;
+      padding: 24px; z-index: 9999; font-family: monospace;
+      white-space: pre-wrap; overflow-y: auto;
     }
   </style>
 </head>
@@ -141,35 +112,66 @@ function buildIframeHTML(bundledCode: string, framework: "react" | "react-native
   <div id="error-overlay"></div>
   <div id="root"></div>
 
-  <!-- CDN globals — must load before user bundle -->
-  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+  <script src="/vendor.bundle.js"></script>
+
   <script>
-    // Map esbuild externals to CDN globals
+    window.__showError__ = (msg) => {
+      const overlay = document.getElementById('error-overlay');
+      overlay.textContent = msg;
+      overlay.style.display = 'block';
+    };
+
+    // Map internal bundle imports to the globals we just loaded
     window.__esbuild_globals__ = {
       "react": window.React,
       "react-dom": window.ReactDOM,
+      "react-native": window.ReactNativeWeb,
+      "react-native-web": window.ReactNativeWeb,
+      "react/jsx-runtime": {
+        jsx: window.React.createElement,
+        jsxs: window.React.createElement,
+        Fragment: window.React.Fragment
+      }
     };
-  </script>
-  <script>
+
     ${getConsoleProxyScript()}
   </script>
 
   <script>
-    ${bundledCode}
+    try {
+      // Check if vendor bundle actually loaded
+      if (!window.React || !window.ReactDOM || ( ${isRN} && !window.ReactNativeWeb)) {
+        throw new Error("Vendor bundle failed to initialize globals.");
+      }
+      ${bundledCode}
+    } catch (err) {
+      window.__showError__('Execution Error:\\n' + err.stack);
+    }
   </script>
 
   <script>
-    try {
-      setTimeout(() => {
-        console.log("DEBUG_IFRAME_DOM:", document.getElementById('root').innerHTML);
-      }, 500);
-      ${mountScript}
-    } catch (err) {
-      const errorMsg = err.name + ': ' + err.message;
-      if (window.__showError__) window.__showError__(errorMsg);
-      window.parent.postMessage({ type: 'error', data: errorMsg }, '*');
-    }
+    (function mount() {
+      try {
+        const rootElement = document.getElementById('root');
+        const AppComponent = (window.App && window.App.default) || window.App;
+        
+        if (!AppComponent) throw new Error('No default export found in App.tsx');
+
+        if (${isRN}) {
+           const { AppRegistry } = window.ReactNativeWeb;
+           AppRegistry.registerComponent('Main', () => AppComponent);
+           AppRegistry.runApplication('Main', {
+             initialProps: {},
+             rootTag: rootElement
+           });
+        } else {
+           const root = window.ReactDOM.createRoot(rootElement);
+           root.render(window.React.createElement(AppComponent));
+        }
+      } catch (err) {
+        window.__showError__('Mounting Error:\\n' + err.message);
+      }
+    })();
   </script>
 </body>
 </html>`;
@@ -253,7 +255,12 @@ export function useExecutor(
   // ── Run ─────────────────────────────────────────────────────────────────────
 
   const run = useCallback(
-    (files: FileMap, framework: "react" | "react-native" = "react-native", entryPoint = "App.tsx") => {
+    (
+      files: FileMap,
+      framework: "react" | "react-native" = "react-native",
+      entryPoint = "App.tsx",
+    ) => {
+      console.log("Starting run with framework:", framework);
       const worker = workerRef.current;
       if (!worker) return;
 
@@ -272,7 +279,7 @@ export function useExecutor(
         const doc = iframe.contentDocument || iframe.contentWindow?.document;
         if (doc) {
           doc.open();
-          doc.write('<!DOCTYPE html><html><body></body></html>');
+          doc.write("<!DOCTYPE html><html><body></body></html>");
           doc.close();
         } else {
           iframe.srcdoc = "";
@@ -301,11 +308,15 @@ export function useExecutor(
             ]);
           }
 
-          const html = buildIframeHTML(msg.code, frameworkRef.current);
+          const html = buildIframeHTML(
+            msg.code,
+            framework ?? frameworkRef.current,
+          );
 
           if (iframeRef.current) {
             const iframe = iframeRef.current;
-            const doc = iframe.contentDocument || iframe.contentWindow?.document;
+            const doc =
+              iframe.contentDocument || iframe.contentWindow?.document;
             if (doc) {
               doc.open();
               doc.write(html);
@@ -319,14 +330,17 @@ export function useExecutor(
           setLastRanAt(Date.now());
         } else {
           // Bundle errors
-          const formattedErrors = msg.errors.map(err => {
-             return `${err.file ? err.file + (err.line ? `:${err.line}` : '') : 'Error'}\n${err.message}`;
-          }).join('\n\n');
-          
+          const formattedErrors = msg.errors
+            .map((err) => {
+              return `${err.file ? err.file + (err.line ? `:${err.line}` : "") : "Error"}\n${err.message}`;
+            })
+            .join("\n\n");
+
           if (iframeRef.current) {
             const iframe = iframeRef.current;
             const errorHtml = buildErrorIframeHTML(formattedErrors);
-            const doc = iframe.contentDocument || iframe.contentWindow?.document;
+            const doc =
+              iframe.contentDocument || iframe.contentWindow?.document;
             if (doc) {
               doc.open();
               doc.write(errorHtml);
