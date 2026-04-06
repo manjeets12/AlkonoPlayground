@@ -1,0 +1,229 @@
+import { useState, useCallback } from "react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type FileMap = Record<string, string>; // path → content
+
+export interface FileSystemState {
+  files: FileMap;
+  activeFile: string;
+  openTabs: string[];
+}
+
+export interface FileSystemActions {
+  // Content
+  getContent: (path: string) => string;
+  setContent: (path: string, content: string) => void;
+
+  // CRUD
+  createFile: (path: string, content?: string) => void;
+  deleteFile: (path: string) => void;
+  renameFile: (oldPath: string, newPath: string) => void;
+
+  // Tabs / navigation
+  openFile: (path: string) => void;
+  closeTab: (path: string) => void;
+
+  // Bundler snapshot: flat map of all files
+  snapshot: () => FileMap;
+}
+
+// ─── Default scaffold ─────────────────────────────────────────────────────────
+
+const DEFAULT_FILES: FileMap = {
+  "App.tsx": `import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+
+export default function App() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Hello, React Native ⚡</Text>
+      <TouchableOpacity style={styles.btn} onPress={() => setCount(c => c + 1)}>
+        <Text style={styles.btnText}>Pressed {count} times</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0f172a',
+    gap: 16,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#e2e8f0',
+  },
+  btn: {
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    backgroundColor: '#3b82f6',
+    borderRadius: 8,
+  },
+  btnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+});
+`,
+
+  "components/Button.tsx": `import React from 'react';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+
+interface ButtonProps {
+  label: string;
+  onPress: () => void;
+  variant?: 'primary' | 'secondary';
+}
+
+export function Button({ label, onPress, variant = 'primary' }: ButtonProps) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[styles.base, variant === 'secondary' && styles.secondary]}
+    >
+      <Text style={styles.label}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  base: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#3b82f6',
+    borderRadius: 8,
+  },
+  secondary: {
+    backgroundColor: '#1e293b',
+  },
+  label: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+});
+`,
+
+  "utils/helpers.ts": `export function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+`,
+};
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
+export function useFileSystem(): FileSystemState & FileSystemActions {
+  const [files, setFiles] = useState<FileMap>({ ...DEFAULT_FILES });
+  const [activeFile, setActiveFile] = useState("App.tsx");
+  const [openTabs, setOpenTabs] = useState<string[]>(["App.tsx"]);
+
+  // ── Content ──────────────────────────────────────────────────────────────
+
+  const getContent = useCallback((path: string) => files[path] ?? "", [files]);
+
+  const setContent = useCallback((path: string, content: string) => {
+    setFiles((prev) => ({ ...prev, [path]: content }));
+  }, []);
+
+  // ── CRUD ─────────────────────────────────────────────────────────────────
+
+  const createFile = useCallback((path: string, content = "") => {
+    setFiles((prev) => {
+      if (prev[path] !== undefined) return prev; // already exists
+      return { ...prev, [path]: content };
+    });
+    setOpenTabs((prev) => (prev.includes(path) ? prev : [...prev, path]));
+    setActiveFile(path);
+  }, []);
+
+  const deleteFile = useCallback(
+    (path: string) => {
+      setFiles((prev) => {
+        const next = { ...prev };
+        delete next[path];
+        return next;
+      });
+      setOpenTabs((prev) => {
+        const next = prev.filter((t) => t !== path);
+        return next;
+      });
+      setActiveFile((prev) => {
+        if (prev !== path) return prev;
+        const remaining = openTabs.filter((t) => t !== path);
+        return remaining[remaining.length - 1] ?? "";
+      });
+    },
+    [openTabs],
+  );
+
+  const renameFile = useCallback((oldPath: string, newPath: string) => {
+    setFiles((prev) => {
+      const next = { ...prev };
+      next[newPath] = next[oldPath] ?? "";
+      delete next[oldPath];
+      return next;
+    });
+    setOpenTabs((prev) => prev.map((t) => (t === oldPath ? newPath : t)));
+    setActiveFile((prev) => (prev === oldPath ? newPath : prev));
+  }, []);
+
+  // ── Tabs ─────────────────────────────────────────────────────────────────
+
+  const openFile = useCallback((path: string) => {
+    setOpenTabs((prev) => (prev.includes(path) ? prev : [...prev, path]));
+    setActiveFile(path);
+  }, []);
+
+  const closeTab = useCallback((path: string) => {
+    setOpenTabs((prev) => {
+      const next = prev.filter((t) => t !== path);
+      setActiveFile((active) => {
+        if (active !== path) return active;
+        return next[next.length - 1] ?? "";
+      });
+      return next;
+    });
+  }, []);
+
+  // ── Snapshot ─────────────────────────────────────────────────────────────
+
+  // Returns the current file map by reference — call at run-time, not during render
+  const snapshot = useCallback((): FileMap => ({ ...files }), [files]);
+
+  return {
+    // State
+    files,
+    activeFile,
+    openTabs,
+    // Actions
+    getContent,
+    setContent,
+    createFile,
+    deleteFile,
+    renameFile,
+    openFile,
+    closeTab,
+    snapshot,
+  };
+}
