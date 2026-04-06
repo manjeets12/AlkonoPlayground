@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import { useFileSystem } from "./hooks/useFileSystem";
 import { useExecutor } from "./hooks/useExecutor";
 import MainLayout from "./layout/MainLayout";
@@ -6,6 +6,8 @@ import LeftPanel from "./layout/LeftPanel";
 import RightPanel from "./layout/RightPanel";
 import Editor from "./components/Editor";
 import TabBar from "./components/TabBar";
+import TopBar from "./components/TopBar";
+import type { Framework } from "./components/TopBar/TopBar";
 
 const PROBLEM = `Build a card-flip memory game.
 
@@ -21,6 +23,8 @@ Requirements:
   – Restart button resets the board`;
 
 export default function App() {
+  const [framework, setFramework] = useState<Framework>("react");
+
   // ── File system ────────────────────────────────────────────────────────────
   const fs = useFileSystem();
 
@@ -42,8 +46,8 @@ export default function App() {
   );
 
   const handleRun = useCallback(() => {
-    run(fs.snapshot());
-  }, [run, fs]);
+    run(fs.snapshot(), framework);
+  }, [run, fs, framework]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -63,6 +67,7 @@ export default function App() {
       }
       editor={
         <>
+          <TopBar framework={framework} onChange={setFramework} />
           <TabBar
             openTabs={fs.openTabs}
             activeFile={fs.activeFile}

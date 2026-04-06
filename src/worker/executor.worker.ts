@@ -14,6 +14,7 @@
  */
 
 import * as esbuild from "esbuild-wasm";
+import esbuildWasmUrl from "esbuild-wasm/esbuild.wasm?url";
 
 // ─── esbuild init (once per worker lifetime) ──────────────────────────────────
 
@@ -23,7 +24,7 @@ function ensureInitialized(): Promise<void> {
   if (!initPromise) {
     initPromise = esbuild.initialize({
       worker: false, // we ARE the worker, don't spawn another
-      wasmURL: "https://unpkg.com/esbuild-wasm@0.20.2/esbuild.wasm",
+      wasmURL: esbuildWasmUrl,
     });
   }
   return initPromise;
@@ -98,10 +99,10 @@ function virtualFSPlugin(files: Record<string, string>): esbuild.Plugin {
       build.onResolve({ filter: /.*/ }, (args) => {
         // react-native → react-native-web (global in iframe)
         if (args.path === "react-native") {
-          return { path: "react-native-web", external: true };
+          return { path: "react-native-web", namespace: "global-stub" };
         }
 
-        // Known CDN globals — mark external so esbuild skips bundling them
+        // Known CDN globals — stub them dynamically via our custom window mapping
         const EXTERNALS = [
           "react",
           "react-dom",
@@ -109,7 +110,7 @@ function virtualFSPlugin(files: Record<string, string>): esbuild.Plugin {
           "react/jsx-runtime",
         ];
         if (EXTERNALS.includes(args.path)) {
-          return { path: args.path, external: true };
+          return { path: args.path, namespace: "global-stub" };
         }
 
         // Relative import — resolve against importer
@@ -135,11 +136,23 @@ function virtualFSPlugin(files: Record<string, string>): esbuild.Plugin {
           return { path: resolved, namespace: NAMESPACE };
         }
 
+        // Exact match in files (e.g. entryPoint like "App.tsx")
+        if (files[args.path] !== undefined) {
+          return { path: args.path, namespace: NAMESPACE };
+        }
+
         // Unknown bare import — mark external and warn
         return { path: args.path, external: true };
       });
 
       // ── Load ───────────────────────────────────────────────────────────────
+
+      build.onLoad({ filter: /.*/, namespace: "global-stub" }, (args) => {
+        return {
+          contents: `module.exports = window.__esbuild_globals__["${args.path}"];`,
+          loader: "js",
+        };
+      });
 
       build.onLoad({ filter: /.*/, namespace: NAMESPACE }, (args) => {
         const content = files[args.path];
@@ -184,13 +197,13 @@ self.onmessage = async (
       write: false,
       format: "iife", // wraps in (function(){...})() — safe for iframe
       globalName: "App", // exports available as window.App
-      jsx: "automatic",
+      jsx: "transform",
       jsxImportSource: "react",
       target: "es2017",
       plugins: [virtualFSPlugin(files)],
 
-      // These are loaded via CDN script tags in the iframe HTML
-      external: ["react", "react-dom", "react-native-web", "react/jsx-runtime"],
+      // We mapped these to global-stubs using our plugin!
+      // external: ["react", "react-dom", "react-native-web", "react/jsx-runtime"],
 
       // Inline sourcemaps for error line mapping
       sourcemap: "inline",
@@ -198,6 +211,7 @@ self.onmessage = async (
       // Suppress "bundle contains dynamic require" warnings for RN internals
       logLevel: "silent",
       platform: "browser", // ✅
+      alias: { 'react-native': 'react-native-web' },
     });
 
     const code = result.outputFiles[0].text;

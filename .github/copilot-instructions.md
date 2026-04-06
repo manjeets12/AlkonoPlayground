@@ -100,6 +100,15 @@ hooks/ → logic hooks (useExecutor, useFileSystem)
 worker/ → execution worker
 utils/ → helpers (formatting, etc.)
 
+**UI Component Pattern (Mandatory):**
+All UI components must be grouped into their own folders containing the component, its styles, and an export barrel file:
+
+```text
+ComponentName/
+├── ComponentName.tsx
+├── ComponentName.module.css
+├── index.ts
+
 ---
 
 # 🎨 STYLING GUIDELINES (MANDATORY)
@@ -209,3 +218,4 @@ After every change:
 
 This is a controlled, step-by-step build of a production system.
 Respect constraints strictly.
+```

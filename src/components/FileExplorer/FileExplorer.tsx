@@ -1,5 +1,6 @@
-import { useState, useRef, useCallback } from "react";
-import type { FileMap } from "../hooks/useFileSystem";
+import { useState, useRef } from "react";
+import styles from "./FileExplorer.module.css";
+import type { FileMap } from "../../hooks/useFileSystem";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -161,23 +162,7 @@ function TreeNodeRow({
       <div
         role={node.kind === "file" ? "button" : "treeitem"}
         tabIndex={0}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 5,
-          padding: `3px ${indent}px 3px ${indent}px`,
-          cursor: "pointer",
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 11,
-          color: isActive ? "#3b7ff5" : "#8899bb",
-          background: isActive ? "#1a2340" : "transparent",
-          borderLeft: `2px solid ${isActive ? "#3b7ff5" : "transparent"}`,
-          paddingLeft: indent - 2,
-          transition: "background 0.1s, color 0.1s",
-          userSelect: "none",
-          position: "relative",
-        }}
-        className="tree-node"
+        className={`${styles.fileItem} ${isActive ? styles.fileItemActive : ""}`}
         onClick={handleClick}
         onKeyDown={(e) => e.key === "Enter" && handleClick()}
         onMouseEnter={(e) => {
@@ -192,6 +177,7 @@ function TreeNodeRow({
           ).querySelector<HTMLElement>(".node-actions");
           if (actions) actions.style.display = "none";
         }}
+        style={{ paddingLeft: indent - 2 }}
       >
         {/* Expand arrow or file icon */}
         {node.kind === "dir" ? (
@@ -223,18 +209,7 @@ function TreeNodeRow({
               if (e.key === "Escape") setRenaming(false);
               e.stopPropagation();
             }}
-            style={{
-              flex: 1,
-              background: "#0a0f1e",
-              border: "1px solid #3b7ff5",
-              borderRadius: 3,
-              padding: "1px 4px",
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 11,
-              color: "#e8edf5",
-              outline: "none",
-              minWidth: 0,
-            }}
+            className={styles.renameInput}
           />
         ) : (
           <span
@@ -254,14 +229,19 @@ function TreeNodeRow({
           className="node-actions"
           style={{ display: "none", gap: 2, marginLeft: "auto", flexShrink: 0 }}
         >
-          <button title="Rename" onClick={startRename} style={actionBtnStyle}>
+          <button
+            title="Rename"
+            onClick={startRename}
+            className={styles.closeButton}
+          >
             ✎
           </button>
           {node.kind === "file" && (
             <button
               title="Delete"
               onClick={handleDelete}
-              style={{ ...actionBtnStyle, color: "#f5524a" }}
+              style={{ color: "#f5524a" }}
+              className={styles.closeButton}
             >
               ✕
             </button>
@@ -288,21 +268,6 @@ function TreeNodeRow({
     </>
   );
 }
-
-const actionBtnStyle: React.CSSProperties = {
-  width: 16,
-  height: 16,
-  border: "none",
-  background: "transparent",
-  cursor: "pointer",
-  color: "#445577",
-  fontSize: 11,
-  borderRadius: 2,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-};
 
 // ─── FileExplorer ─────────────────────────────────────────────────────────────
 
@@ -336,16 +301,9 @@ export default function FileExplorer({
   }
 
   return (
-    <div
-      style={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-      }}
-    >
+    <div className={styles.root}>
       {/* File tree */}
-      <div style={{ flex: 1, overflowY: "auto" }} role="tree">
+      <div className={styles.scroll} role="tree">
         {tree.children.map((node) => (
           <TreeNodeRow
             key={node.path}
@@ -360,15 +318,7 @@ export default function FileExplorer({
 
         {/* New file/folder inline input */}
         {creating && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "3px 10px",
-              borderLeft: "2px solid #3b7ff5",
-            }}
-          >
+          <div className={styles.contextMenu}>
             <span
               style={{
                 fontSize: 9,
@@ -389,49 +339,20 @@ export default function FileExplorer({
                 if (e.key === "Enter") commitCreate();
                 if (e.key === "Escape") setCreating(null);
               }}
-              style={{
-                flex: 1,
-                background: "#0a0f1e",
-                border: "1px solid #3b7ff5",
-                borderRadius: 3,
-                padding: "2px 6px",
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 11,
-                color: "#e8edf5",
-                outline: "none",
-              }}
+              className={styles.editInput}
             />
           </div>
         )}
       </div>
 
       {/* Bottom toolbar */}
-      <div
-        style={{
-          display: "flex",
-          gap: 4,
-          padding: "6px 8px",
-          borderTop: "1px solid #1e2d4a",
-          flexShrink: 0,
-        }}
-      >
+      <div className={styles.toolbar}>
         {(["file", "dir"] as const).map((kind) => (
           <button
             key={kind}
             onClick={() => startCreate(kind)}
             title={`New ${kind}`}
-            style={{
-              flex: 1,
-              padding: "4px 0",
-              background: "transparent",
-              border: "1px dashed #1e2d4a",
-              borderRadius: 3,
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 10,
-              color: "#445577",
-              cursor: "pointer",
-              transition: "all 0.15s",
-            }}
+            className={styles.createButton}
             onMouseEnter={(e) => {
               (e.target as HTMLElement).style.borderColor = "#3b7ff5";
               (e.target as HTMLElement).style.color = "#3b7ff5";

@@ -31,47 +31,20 @@ export interface FileSystemActions {
 // ─── Default scaffold ─────────────────────────────────────────────────────────
 
 const DEFAULT_FILES: FileMap = {
-  "App.tsx": `import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+  "App.tsx": `import React from 'react';
 
 export default function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Hello, React Native ⚡</Text>
-      <TouchableOpacity style={styles.btn} onPress={() => setCount(c => c + 1)}>
-        <Text style={styles.btnText}>Pressed {count} times</Text>
-      </TouchableOpacity>
-    </View>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '24px' }}>
+      <h1 style={{ fontSize: '32px', margin: 0 }}>Hello World (32px)</h1>
+      <h2 style={{ fontSize: '24px', margin: 0, color: '#94a3b8' }}>Hello World (24px)</h2>
+      <h3 style={{ fontSize: '16px', margin: 0, color: '#64748b' }}>Hello World (16px)</h3>
+      <p style={{ marginTop: '20px' }}>
+        This is a standard React execution running perfectly in the integrated execution environment!
+      </p>
+    </div>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#0f172a',
-    gap: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#e2e8f0',
-  },
-  btn: {
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    backgroundColor: '#3b82f6',
-    borderRadius: 8,
-  },
-  btnText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-});
 `,
 
   "components/Button.tsx": `import React from 'react';

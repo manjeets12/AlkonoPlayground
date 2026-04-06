@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { EditorView, basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
+import styles from "./Editor.module.css";
 
 type Props = {
   code: string;
@@ -98,5 +99,5 @@ export default function Editor({ code, onChange }: Props) {
     }
   }, [code]);
 
-  return <div ref={editorRef} style={{ height: "100%" }} />;
+  return <div ref={editorRef} className={styles.editorContainer} />;
 }

@@ -1,0 +1,88 @@
+.aside {
+  flex: 0.2;
+  background: #0a0f1e;
+  border-right: 1px solid #1e2d4a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.section {
+  border-bottom: 1px solid #1e2d4a;
+}
+
+.sectionButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 12px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: #445577;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+
+.sectionButton:hover {
+  background: rgba(59, 127, 245, 0.08);
+  color: #3b7ff5;
+}
+
+.sectionLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: #445577;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sectionChevron {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: #445577;
+  transition: transform 0.2s;
+}
+
+.sectionContent {
+  padding: 8px 12px 12px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.problemText {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11px;
+  color: #8899bb;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.explorerHeader {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  height: 32px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: #445577;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.explorerScroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
