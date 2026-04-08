@@ -7,7 +7,7 @@ import LeftPanel from "./layout/LeftPanel";
 import RightPanel from "./layout/RightPanel";
 import Editor from "./components/Editor";
 import TabBar from "./components/TabBar";
-import Logs from "./components/Logs";
+import Logger from "./components/Logger";
 import FooterBar from "./layout/FooterBar";
 import ProblemPortal from "./components/ProblemPortal/ProblemPortal";
 import type { Framework } from "./layout/FooterBar";
@@ -150,7 +150,7 @@ export default function App() {
 
 
 
-        bottomPanel={!isFullscreen && <Logs logs={logs} onClear={clearLogs} />}
+        bottomPanel={!isFullscreen && <Logger logs={logs} onClear={clearLogs} />}
         rightPanel={
           !isFullscreen &&
           isRightPanelOpen && (
