@@ -6,6 +6,8 @@ interface MainLayoutProps {
   leftPanel?: ReactNode;
   editor: ReactNode;
   rightPanel?: ReactNode;
+  bottomPanel?: ReactNode;
+  footer?: ReactNode;
   status: ExecutionStatus;
 }
 
@@ -13,6 +15,8 @@ export default function MainLayout({
   leftPanel,
   editor,
   rightPanel,
+  bottomPanel,
+  footer,
   status,
 }: MainLayoutProps) {
   const statusColorClass =
@@ -48,17 +52,24 @@ export default function MainLayout({
         </div>
       </header>
 
-      {/* ── Three-column body ────────────────────────────────────────── */}
+      {/* ── Main body ────────────────────────────────────────── */}
       <div className={styles.body}>
-        {/* Left: file explorer + problem */}
-        {leftPanel}
+        {/* Container for Left and Center (Editor + Logs) */}
+        <div className={styles.centerContainer}>
+          <div className={styles.upperArea}>
+            {leftPanel}
+            <main className={styles.main}>{editor}</main>
+          </div>
+          {bottomPanel}
+        </div>
 
-        {/* Center: tab bar + editor */}
-        <main className={styles.main}>{editor}</main>
-
-        {/* Right: run bar + preview + logs */}
+        {/* Right: run bar + preview */}
         {rightPanel}
       </div>
+
+      {/* ── Footer ────────────────────────────────────────────── */}
+      {footer}
     </div>
   );
 }
+

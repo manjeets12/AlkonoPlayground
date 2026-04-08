@@ -76,6 +76,21 @@
   min-height: 0;
 }
 
+.centerContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid #1e2d4a;
+}
+
+.upperArea {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+
 .main {
   flex: 1;
   display: flex;
@@ -83,5 +98,17 @@
   background: #060912;
   overflow: hidden;
   min-width: 0;
-  border-right: 1px solid #1e2d4a;
+  border-left: 1px solid #1e2d4a;
 }
+
+[class*="bottomPanel"] {
+  flex-shrink: 0;
+  height: auto;
+  max-height: 50%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+
+

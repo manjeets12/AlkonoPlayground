@@ -1,11 +1,12 @@
 import { useState, useCallback } from "react";
+import type { Framework, FileMap } from "../types/framework";
+import { getScaffold, getMainContent } from "../templates";
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type FileMap = Record<string, string>; // path → content
 export type ReadOnlyFiles = Set<string>; // paths that cannot be edited/deleted
 export type Directories = Set<string>; // paths that are directories
-export type Framework = "react" | "react-native";
 
 export interface FileSystemState {
   files: FileMap;
@@ -37,145 +38,22 @@ export interface FileSystemActions {
 
   // Update main.tsx content for a specific framework
   updateMainContent: (framework: Framework) => void;
+
+  // Hydrate state from external source (e.g. storage)
+  restoreState: (state: {
+    files?: FileMap;
+    activeFile?: string;
+    openTabs?: string[];
+    directories?: string[];
+  }) => void;
 }
+
+
 
 // ─── Default scaffold ─────────────────────────────────────────────────────────
 
-function getMainContent(framework: Framework): string {
-  if (framework === "react-native") {
-    return `import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+const DEFAULT_FILES: FileMap = getScaffold("react");
 
-export default function Main() {
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.h1}>Hello World (React Native)</Text>
-        <Text style={styles.h2}>Tap to interact</Text>
-        <Text style={styles.p}>
-          This is a React Native component running in the integrated execution environment!
-        </Text>
-      </View>
-    </SafeAreaView>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0f172a',
-  },
-  content: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'center',
-    gap: 12,
-  },
-  h1: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
-    margin: 0,
-  },
-  h2: {
-    fontSize: 24,
-    color: '#94a3b8',
-    margin: 0,
-  },
-  p: {
-    fontSize: 16,
-    color: '#64748b',
-    marginTop: 20,
-  },
-});
-`;
-  }
-
-  // Default React content
-  return `import React from 'react';
-
-export default function Main() {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '24px' }}>
-      <h1 style={{ fontSize: '32px', margin: 0 }}>Hello World (32px)</h1>
-      <h2 style={{ fontSize: '24px', margin: 0, color: '#94a3b8' }}>Hello World (24px)</h2>
-      <h3 style={{ fontSize: '16px', margin: 0, color: '#64748b' }}>Hello World (16px)</h3>
-      <p style={{ marginTop: '20px' }}>
-        This is a standard React execution running perfectly in the integrated execution environment!
-      </p>
-    </div>
-  );
-}
-`;
-}
-
-const DEFAULT_FILES: FileMap = {
-  "main.tsx": getMainContent("react"),
-
-  "App.tsx": `import React from 'react';
-import Main from './main';
-
-export default function App() {
-  return <Main />;
-}
-`,
-
-  "components/Button.tsx": `import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-
-interface ButtonProps {
-  label: string;
-  onPress: () => void;
-  variant?: 'primary' | 'secondary';
-}
-
-export function Button({ label, onPress, variant = 'primary' }: ButtonProps) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[styles.base, variant === 'secondary' && styles.secondary]}
-    >
-      <Text style={styles.label}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
-
-const styles = StyleSheet.create({
-  base: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: '#3b82f6',
-    borderRadius: 8,
-  },
-  secondary: {
-    backgroundColor: '#1e293b',
-  },
-  label: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-});
-`,
-
-  "utils/helpers.ts": `export function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
-}
-
-export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-export function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-`,
-};
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
@@ -287,6 +165,19 @@ export function useFileSystem(): FileSystemState & FileSystemActions {
     setFiles((prev) => ({ ...prev, "main.tsx": newContent }));
   }, []);
 
+  const restoreState = useCallback((state: {
+    files?: FileMap;
+    activeFile?: string;
+    openTabs?: string[];
+    directories?: string[];
+  }) => {
+    if (state.files) setFiles(state.files);
+    if (state.activeFile) setActiveFile(state.activeFile);
+    if (state.openTabs) setOpenTabs(state.openTabs);
+    if (state.directories) setDirectories(new Set(state.directories));
+  }, []);
+
+
   return {
     // State
     files,
@@ -305,5 +196,7 @@ export function useFileSystem(): FileSystemState & FileSystemActions {
     snapshot,
     isReadOnly,
     updateMainContent,
+    restoreState,
   };
 }
+

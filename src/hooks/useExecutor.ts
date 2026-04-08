@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import type { FileMap } from "./useFileSystem";
-import { getConsoleProxyScript } from "../utils/consoleProxy";
+import type { FileMap, Framework } from "../types/framework";
+import { buildExecutionIframe, buildErrorIframe } from "../templates/execution/iframe";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,147 +36,6 @@ interface WorkerErrorMessage {
 
 type WorkerMessage = WorkerSuccessMessage | WorkerErrorMessage;
 
-// ─── iframe HTML builder ──────────────────────────────────────────────────────
-
-/**
- * Wraps the bundled IIFE code in a full HTML document.
- *
- * Global mapping (CDN → window globals that esbuild externalized):
- *   react             → window.React
- *   react-dom         → window.ReactDOM
- *   react-native-web  → window.ReactNativeWeb
- *   react/jsx-runtime → resolved from window.React automatically
- *
- * The IIFE output from esbuild assigns to window.App (globalName: "App").
- * After it runs, we mount window.App.default (or window.App if no .default).
- */
-function buildErrorIframeHTML(errorMessage: string): string {
-  const safeMessage = errorMessage.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0b1220; height: 100vh; overflow: hidden; }
-    #error-overlay {
-      display: flex;
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(220, 38, 38, 0.95);
-      color: #fff;
-      font-family: Menlo, Monaco, Consolas, monospace;
-      padding: 20px;
-      z-index: 9999;
-      white-space: pre-wrap;
-      overflow: auto;
-      flex-direction: column;
-    }
-  </style>
-</head>
-<body>
-  <div id="error-overlay">${safeMessage}</div>
-</body>
-</html>`;
-}
-
-function buildIframeHTML(
-  bundledCode: string,
-  framework: "react" | "react-native",
-): string {
-  const isRN = framework === "react-native";
-
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <style>
-    html, body, #root { 
-      height: 100%; width: 100%; margin: 0; padding: 0; 
-      background: #0b1220; color: #ffffff; 
-      display: flex; flex-direction: column;
-      overflow: hidden;
-    }
-    #error-overlay {
-      display: none; position: fixed; inset: 0;
-      background: #7f1d1d; color: #fecaca;
-      padding: 24px; z-index: 9999; font-family: monospace;
-      white-space: pre-wrap; overflow-y: auto;
-    }
-  </style>
-</head>
-<body>
-  <div id="error-overlay"></div>
-  <div id="root"></div>
-
-  <script src="/vendor.bundle.js"></script>
-
-  <script>
-    window.__showError__ = (msg) => {
-      const overlay = document.getElementById('error-overlay');
-      overlay.textContent = msg;
-      overlay.style.display = 'block';
-    };
-
-    // Map internal bundle imports to the globals we just loaded
-    window.__esbuild_globals__ = {
-      "react": window.React,
-      "react-dom": window.ReactDOM,
-      "react-native": window.ReactNativeWeb,
-      "react-native-web": window.ReactNativeWeb,
-      "react/jsx-runtime": {
-        jsx: window.React.createElement,
-        jsxs: window.React.createElement,
-        Fragment: window.React.Fragment
-      }
-    };
-
-    ${getConsoleProxyScript()}
-  </script>
-
-  <script>
-    try {
-      // Check if vendor bundle actually loaded
-      if (!window.React || !window.ReactDOM || ( ${isRN} && !window.ReactNativeWeb)) {
-        throw new Error("Vendor bundle failed to initialize globals.");
-      }
-      ${bundledCode}
-    } catch (err) {
-      window.__showError__('Execution Error:\\n' + err.stack);
-    }
-  </script>
-
-  <script>
-    (function mount() {
-      try {
-        const rootElement = document.getElementById('root');
-        const AppComponent = (window.App && window.App.default) || window.App;
-        
-        if (!AppComponent) throw new Error('No default export found in App.tsx');
-
-        if (${isRN}) {
-           const { AppRegistry } = window.ReactNativeWeb;
-           AppRegistry.registerComponent('Main', () => AppComponent);
-           AppRegistry.runApplication('Main', {
-             initialProps: {},
-             rootTag: rootElement
-           });
-        } else {
-           const root = window.ReactDOM.createRoot(rootElement);
-           root.render(window.React.createElement(AppComponent));
-        }
-      } catch (err) {
-        window.__showError__('Mounting Error:\\n' + err.message);
-      }
-    })();
-  </script>
-</body>
-</html>`;
-}
-
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 let logIdCounter = 0;
@@ -189,7 +48,7 @@ export function useExecutor(
 ) {
   const workerRef = useRef<Worker | null>(null);
   const runIdRef = useRef<number>(0);
-  const frameworkRef = useRef<"react" | "react-native">("react-native");
+  const frameworkRef = useRef<Framework>("react-native");
 
   const [status, setStatus] = useState<ExecutionStatus>("idle");
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -198,8 +57,6 @@ export function useExecutor(
   const [lastRanAt, setLastRanAt] = useState<number | null>(null);
 
   // ── Worker lifecycle ────────────────────────────────────────────────────────
-  // Instantiate once; terminate on unmount.
-
   useEffect(() => {
     workerRef.current = new Worker(
       new URL("../worker/executor.worker.ts", import.meta.url),
@@ -213,11 +70,8 @@ export function useExecutor(
   }, []);
 
   // ── iframe → parent message listener ────────────────────────────────────────
-  // Registered once; guards on iframe source to prevent foreign messages.
-
   useEffect(() => {
     function handler(e: MessageEvent) {
-      // Only accept messages from our iframe
       if (!iframeRef.current || e.source !== iframeRef.current.contentWindow) {
         return;
       }
@@ -225,12 +79,7 @@ export function useExecutor(
       const msg = e.data;
       if (!msg || !msg.type) return;
 
-      const level: LogEntry["level"] = [
-        "log",
-        "warn",
-        "error",
-        "info",
-      ].includes(msg.type)
+      const level: LogEntry["level"] = ["log", "warn", "error", "info"].includes(msg.type)
         ? msg.type
         : "error";
 
@@ -250,21 +99,19 @@ export function useExecutor(
 
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, [iframeRef]); // iframeRef is stable, so this runs once
+  }, [iframeRef]);
 
   // ── Run ─────────────────────────────────────────────────────────────────────
 
   const run = useCallback(
     (
       files: FileMap,
-      framework: "react" | "react-native" = "react-native",
+      framework: Framework = "react-native",
       entryPoint = "App.tsx",
     ) => {
-      console.log("Starting run with framework:", framework);
       const worker = workerRef.current;
       if (!worker) return;
 
-      // Capture current run ID to detect if a newer run starts before this one finishes
       const thisRunId = ++runIdRef.current;
       frameworkRef.current = framework;
 
@@ -273,27 +120,22 @@ export function useExecutor(
       setBundleErrors([]);
       setIsStale(false);
 
-      // Clear preview while bundling
       if (iframeRef.current) {
-        const iframe = iframeRef.current;
-        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
         if (doc) {
           doc.open();
           doc.write("<!DOCTYPE html><html><body></body></html>");
           doc.close();
-        } else {
-          iframe.srcdoc = "";
         }
       }
 
       worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
-        // Discard if a newer run has started
         if (thisRunId !== runIdRef.current) return;
 
         const msg = e.data;
 
         if (msg.type === "success") {
-          // Surface bundle warnings as log entries
+          // Log warnings
           if (msg.warnings.length > 0) {
             setLogs((prev) => [
               ...prev,
@@ -308,21 +150,14 @@ export function useExecutor(
             ]);
           }
 
-          const html = buildIframeHTML(
-            msg.code,
-            framework ?? frameworkRef.current,
-          );
+          const html = buildExecutionIframe(msg.code, framework);
 
           if (iframeRef.current) {
-            const iframe = iframeRef.current;
-            const doc =
-              iframe.contentDocument || iframe.contentWindow?.document;
+            const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
             if (doc) {
               doc.open();
               doc.write(html);
               doc.close();
-            } else {
-              iframe.srcdoc = html;
             }
           }
 
@@ -331,22 +166,16 @@ export function useExecutor(
         } else {
           // Bundle errors
           const formattedErrors = msg.errors
-            .map((err) => {
-              return `${err.file ? err.file + (err.line ? `:${err.line}` : "") : "Error"}\n${err.message}`;
-            })
+            .map((err) => `${err.file ? err.file + (err.line ? `:${err.line}` : "") : "Error"}\n${err.message}`)
             .join("\n\n");
 
           if (iframeRef.current) {
-            const iframe = iframeRef.current;
-            const errorHtml = buildErrorIframeHTML(formattedErrors);
-            const doc =
-              iframe.contentDocument || iframe.contentWindow?.document;
+            const errorHtml = buildErrorIframe(formattedErrors);
+            const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
             if (doc) {
               doc.open();
               doc.write(errorHtml);
               doc.close();
-            } else {
-              iframe.srcdoc = errorHtml;
             }
           }
 
@@ -371,15 +200,12 @@ export function useExecutor(
         if (thisRunId !== runIdRef.current) return;
         const msg = `Worker error: ${e.message}`;
         if (iframeRef.current) {
-          const iframe = iframeRef.current;
-          const errorHtml = buildErrorIframeHTML(msg);
-          const doc = iframe.contentDocument || iframe.contentWindow?.document;
+          const errorHtml = buildErrorIframe(msg);
+          const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
           if (doc) {
             doc.open();
             doc.write(errorHtml);
             doc.close();
-          } else {
-            iframe.srcdoc = errorHtml;
           }
         }
         setLogs((prev) => [
@@ -394,7 +220,7 @@ export function useExecutor(
         setStatus("error");
       };
 
-      worker.postMessage({ files, entryPoint });
+      worker.postMessage({ files, framework, entryPoint });
     },
     [iframeRef],
   );
@@ -413,3 +239,4 @@ export function useExecutor(
     lastRanAt,
   };
 }
+

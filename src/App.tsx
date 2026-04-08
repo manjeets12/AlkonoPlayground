@@ -1,4 +1,5 @@
-import { useRef, useCallback, useState, useEffect } from "react";
+import { useRef, useCallback, useState } from "react";
+
 import { useFileSystem } from "./hooks/useFileSystem";
 import { useExecutor } from "./hooks/useExecutor";
 import MainLayout from "./layout/MainLayout";
@@ -6,9 +7,15 @@ import LeftPanel from "./layout/LeftPanel";
 import RightPanel from "./layout/RightPanel";
 import Editor from "./components/Editor";
 import TabBar from "./components/TabBar";
-import TopBar from "./components/TopBar";
-import type { Framework } from "./components/TopBar/TopBar";
+import Logs from "./components/Logs";
+import FooterBar from "./layout/FooterBar";
+import type { Framework } from "./layout/FooterBar";
+import { usePersistence } from "./hooks/usePersistence";
+
 import styles from "./App.module.css";
+
+
+
 
 const PROBLEM = `Build a card-flip memory game.
 
@@ -27,15 +34,19 @@ export default function App() {
   const [framework, setFramework] = useState<Framework>("react");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
-  const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
 
   // ── File system ────────────────────────────────────────────────────────────
-  const fs = useFileSystem();
+  const { restoreState, updateMainContent, ...fs } = useFileSystem();
 
-  // ── Update main.tsx when framework changes ─────────────────────────────────
-  useEffect(() => {
-    fs.updateMainContent(framework);
-  }, [framework, fs]);
+  // ── Persistence ────────────────────────────────────────────────────────────
+  const { handleSave, isSaving } = usePersistence({
+    framework,
+    setFramework,
+    updateMainContent,
+    restoreState,
+    fs,
+  });
 
   // ── iframe ref — shared between Preview (renders it) and useExecutor (writes srcdoc) ──
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -45,13 +56,20 @@ export default function App() {
     useExecutor(iframeRef);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
-
   const handleCodeChange = useCallback(
     (content: string) => {
       fs.setContent(fs.activeFile, content);
       markStale();
     },
     [fs, markStale],
+  );
+
+  const handleFrameworkChange = useCallback(
+    (fw: Framework) => {
+      setFramework(fw);
+      updateMainContent(fw);
+    },
+    [updateMainContent],
   );
 
   const handleRun = useCallback(() => {
@@ -100,15 +118,7 @@ export default function App() {
         )
       }
       editor={
-        <>
-          {!isFullscreen && (
-            <TopBar
-              framework={framework}
-              onChange={setFramework}
-              onFormat={handleFormat}
-              onToggleFullscreen={handleToggleFullscreen}
-            />
-          )}
+        <div className={styles.editorArea}>
           {!isFullscreen && (
             <TabBar
               openTabs={fs.openTabs}
@@ -126,47 +136,50 @@ export default function App() {
               ✕ Exit
             </button>
           )}
-          {!isFullscreen && (
-            <>
-              <button
-                onClick={() => setIsLeftPanelOpen((v) => !v)}
-                className={styles.leftPanelToggle}
-                title={isLeftPanelOpen ? "Hide left panel" : "Show left panel"}
-              >
-                {isLeftPanelOpen ? "◀" : "▶"}
-              </button>
-              <button
-                onClick={() => setIsRightPanelOpen((v) => !v)}
-                className={styles.rightPanelToggle}
-                title={
-                  isRightPanelOpen ? "Hide right panel" : "Show right panel"
-                }
-              >
-                {isRightPanelOpen ? "▶" : "◀"}
-              </button>
-            </>
-          )}
           <Editor
             key={fs.activeFile} // remount when file switches — avoids stale CodeMirror state
             code={fs.getContent(fs.activeFile)}
             onChange={handleCodeChange}
           />
-        </>
+        </div>
       }
+
+
+      bottomPanel={!isFullscreen && <Logs logs={logs} onClear={clearLogs} />}
       rightPanel={
         !isFullscreen &&
         isRightPanelOpen && (
           <RightPanel
             ref={iframeRef}
             status={status}
-            logs={logs}
             isStale={isStale}
             lastRanAt={lastRanAt}
             onRun={handleRun}
-            onClearLogs={clearLogs}
           />
         )
       }
+      footer={
+        !isFullscreen && (
+          <FooterBar
+            framework={framework}
+            onChange={handleFrameworkChange}
+            onFormat={handleFormat}
+
+
+
+            onToggleFullscreen={handleToggleFullscreen}
+            isLeftPanelOpen={isLeftPanelOpen}
+            isRightPanelOpen={isRightPanelOpen}
+            onToggleLeftPanel={() => setIsLeftPanelOpen((v) => !v)}
+            onToggleRightPanel={() => setIsRightPanelOpen((v) => !v)}
+            onSave={handleSave}
+            isSaving={isSaving}
+          />
+        )
+      }
+
+
     />
   );
 }
+

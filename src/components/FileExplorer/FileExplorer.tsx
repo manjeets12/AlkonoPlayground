@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import styles from "./FileExplorer.module.css";
-import type { FileMap, Directories } from "../../hooks/useFileSystem";
+import type { FileMap, Directories } from "../../types/framework";
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -437,30 +438,16 @@ export default function FileExplorer({
 
       {/* File tree */}
       <div className={styles.scroll} role="tree">
-        {tree.children.map((node) => (
-          <TreeNodeRow
-            key={node.path}
-            node={node}
-            depth={0}
-            activeFile={activeFile}
-            selectedPath={selectedPath}
-            isReadOnly={isReadOnly}
-            onOpen={onOpen}
-            onSelect={handleItemSelect}
-            onDelete={onDelete}
-            onRename={onRename}
-          />
-        ))}
-
-        {/* New file/folder inline input */}
+        {/* New file/folder inline input at the top */}
         {creating && (
-          <div className={styles.contextMenu}>
+          <div className={styles.creationRow}>
             <span
               style={{
                 fontSize: 9,
                 color: "#3b7ff5",
                 width: 12,
                 textAlign: "center",
+                marginLeft: 8, // Fixed indent for root-level creation
               }}
             >
               {creating === "dir" ? "▶" : "◈"}
@@ -479,7 +466,23 @@ export default function FileExplorer({
             />
           </div>
         )}
+
+        {tree.children.map((node) => (
+          <TreeNodeRow
+            key={node.path}
+            node={node}
+            depth={0}
+            activeFile={activeFile}
+            selectedPath={selectedPath}
+            isReadOnly={isReadOnly}
+            onOpen={onOpen}
+            onSelect={handleItemSelect}
+            onDelete={onDelete}
+            onRename={onRename}
+          />
+        ))}
       </div>
+
     </div>
   );
 }

@@ -17,7 +17,7 @@ const Preview = forwardRef<HTMLIFrameElement, PreviewProps>(function Preview(
   { status, lastRanAt },
   ref,
 ) {
-  const neverRan = lastRanAt === null;
+  // const neverRan = lastRanAt === null;
   const isRunning = status === "running";
 
   const ranTime = lastRanAt
