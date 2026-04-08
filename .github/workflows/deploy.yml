@@ -31,7 +31,8 @@ jobs:
         run: npm install
       
       - name: Build vendor bundle
-        run: npm run vendorbuild
+        run: |
+          npm run vendor:build
 
       - name: Build project
         run: npm run build
