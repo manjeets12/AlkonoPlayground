@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { LogEntry } from "../../hooks/useExecutor";
-import styles from "./Logs.module.css";
+import styles from "./Logger.module.css";
 
 interface LogsProps {
   logs: LogEntry[];
