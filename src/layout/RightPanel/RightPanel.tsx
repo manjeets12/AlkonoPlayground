@@ -1,10 +1,13 @@
 import { forwardRef } from "react";
 import Preview from "../../components/Preview";
+import DeviceFrame from "../../components/DeviceFrame";
 import type { ExecutionStatus } from "../../hooks/useExecutor";
+import type { Framework } from "../FooterBar/FooterBar";
 import styles from "./RightPanel.module.css";
 
 
 interface RightPanelProps {
+  framework: Framework;
   status: ExecutionStatus;
   isStale: boolean;
   lastRanAt: number | null;
@@ -26,7 +29,7 @@ const STATUS_CONFIG: Record<
  * it to useExecutor without Preview needing to know about execution logic.
  */
 const RightPanel = forwardRef<HTMLIFrameElement, RightPanelProps>(
-  function RightPanel({ status, isStale, lastRanAt, onRun }, ref) {
+  function RightPanel({ framework, status, isStale, lastRanAt, onRun }, ref) {
     const isRunning = status === "running";
     const sc = STATUS_CONFIG[status];
 
@@ -34,28 +37,22 @@ const RightPanel = forwardRef<HTMLIFrameElement, RightPanelProps>(
       <div className={styles.root}>
         {/* ── Run bar ───────────────────────────────────────────────── */}
         <div className={styles.runBar}>
-          {/* Run / Stop button */}
           <button
             onClick={onRun}
             disabled={isRunning}
             className={styles.runButton}
           >
-            {/* Play triangle / loading square */}
             <span className={isRunning ? styles.stopIcon : styles.runIcon} />
             {isRunning ? "Running…" : "Run"}
           </button>
 
-          {/* Stale indicator — code changed since last run */}
           {isStale && (
             <span className={styles.staleIndicator}>● unsaved changes</span>
           )}
 
-          {/* Spacer */}
           <span className={styles.spacer} />
 
-          {/* Execution status pill */}
           <span className={`${styles.statusBadge} ${sc.className}`}>
-            {/* Pip */}
             <span className={styles.statusPip} />
             {sc.label}
           </span>
@@ -64,14 +61,15 @@ const RightPanel = forwardRef<HTMLIFrameElement, RightPanelProps>(
         {/* ── Preview header ────────────────────────────────────────── */}
         <div className={styles.previewHeader}>Preview</div>
 
-        {/* ── Preview (iframe ref forwarded) ────────────────────────── */}
+        {/* ── Preview with Device Frame ────────────────────────────── */}
         <div className={styles.previewContainer}>
-          <Preview ref={ref} status={status} lastRanAt={lastRanAt} />
+          <DeviceFrame active={framework === "react-native"}>
+            <Preview ref={ref} status={status} lastRanAt={lastRanAt} />
+          </DeviceFrame>
         </div>
       </div>
     );
   },
 );
-
 
 export default RightPanel;

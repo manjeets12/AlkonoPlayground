@@ -1,4 +1,5 @@
 import { useProblemStore } from "../../store/useProblemStore";
+import ProblemDescription from "../ProblemDescription";
 import styles from "./ProblemDetailView.module.css";
 
 export default function ProblemDetailView() {
@@ -25,9 +26,11 @@ export default function ProblemDetailView() {
       <main className={styles.content}>
         <h1 className={styles.title}>{problem.title}</h1>
         <div className={styles.divider} />
-        <pre className={styles.description}>
-          {problem.description}
-        </pre>
+        
+        <ProblemDescription 
+          description={problem.description} 
+          variant="detailed" 
+        />
 
         <div className={styles.footerAction}>
           <button 

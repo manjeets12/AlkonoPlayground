@@ -1,3 +1,4 @@
+import { useState } from "react";
 import FileExplorer from "../../components/FileExplorer";
 import ProblemViewer from "../../components/ProblemViewer/ProblemViewer";
 import type { FileMap, Directories } from "../../types/framework";
@@ -14,6 +15,8 @@ interface LeftPanelProps {
   onRename: (oldPath: string, newPath: string) => void;
 }
 
+type TabType = "problem" | "files";
+
 export default function LeftPanel({
   files,
   directories,
@@ -24,27 +27,48 @@ export default function LeftPanel({
   onDelete,
   onRename,
 }: LeftPanelProps) {
+  const [activeTab, setActiveTab] = useState<TabType>("problem");
+
   return (
     <aside className={styles.aside}>
-      <ProblemViewer />
+      {/* ── Tab Header ────────────────────────────────────────────── */}
+      <nav className={styles.tabs}>
+        <button 
+          className={`${styles.tab} ${activeTab === "problem" ? styles.tabActive : ""}`}
+          onClick={() => setActiveTab("problem")}
+        >
+          Problem
+        </button>
+        <button 
+          className={`${styles.tab} ${activeTab === "files" ? styles.tabActive : ""}`}
+          onClick={() => setActiveTab("files")}
+        >
+          Files
+        </button>
+      </nav>
 
-      {/* ── File explorer ────────────────────────────────────────────── */}
-      <div className={styles.section}>
-        <div className={styles.explorerHeader}>
-          <span className={styles.sectionLabel}>Explorer</span>
-        </div>
-        <div className={styles.explorerScroll}>
-          <FileExplorer
-            files={files}
-            directories={directories}
-            activeFile={activeFile}
-            isReadOnly={isReadOnly}
-            onOpen={onOpen}
-            onCreate={onCreate}
-            onDelete={onDelete}
-            onRename={onRename}
-          />
-        </div>
+      {/* ── Content Area ─────────────────────────────────────────── */}
+      <div className={styles.content}>
+        {activeTab === "problem" && (
+          <ProblemViewer />
+        )}
+
+        {activeTab === "files" && (
+          <div className={styles.explorerWrapper}>
+            <div className={styles.explorerScroll}>
+              <FileExplorer
+                files={files}
+                directories={directories}
+                activeFile={activeFile}
+                isReadOnly={isReadOnly}
+                onOpen={onOpen}
+                onCreate={onCreate}
+                onDelete={onDelete}
+                onRename={onRename}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </aside>
   );

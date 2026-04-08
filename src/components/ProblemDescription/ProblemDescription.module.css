@@ -1,0 +1,85 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  color: #c9d1d9;
+}
+
+.link {
+  color: #58a6ff;
+  text-decoration: none;
+  transition: all 0.2s;
+  border-bottom: 1px solid transparent;
+}
+
+.link:hover {
+  color: #79c0ff;
+  text-decoration: underline;
+}
+
+.codeBlock {
+  background: #010409;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  overflow-x: auto;
+  color: #e6edf3;
+  line-height: 1.6;
+}
+
+.ul, .ol {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.listItem {
+  display: list-item;
+}
+
+/* ── Detailed Variant ────────────────────────────────────────────── */
+.detailed {
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.detailed .paragraph {
+  margin-bottom: 20px;
+}
+
+.detailed .codeBlock {
+  padding: 20px;
+  margin: 24px 0;
+  font-size: 14px;
+}
+
+.detailed .ul, .detailed .ol {
+  margin-bottom: 20px;
+}
+
+.detailed .listItem {
+  margin-bottom: 8px;
+}
+
+/* ── Preview Variant ─────────────────────────────────────────────── */
+.preview {
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.preview .paragraph {
+  margin-bottom: 12px;
+}
+
+.preview .codeBlock {
+  padding: 12px;
+  margin: 12px 0;
+  font-size: 11.5px;
+}
+
+.preview .ul, .preview .ol {
+  margin-bottom: 12px;
+  padding-left: 16px;
+}
+
+.preview .listItem {
+  margin-bottom: 4px;
+}

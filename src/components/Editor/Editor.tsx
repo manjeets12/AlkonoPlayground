@@ -1,14 +1,21 @@
 import { useEffect, useRef } from "react";
 import { EditorView, basicSetup } from "codemirror";
+import { Compartment } from "@codemirror/state";
 import { javascript } from "@codemirror/lang-javascript";
+import { THEMES } from "../../utils/editorThemes";
+import type { ThemeId } from "../../utils/editorThemes";
 import styles from "./Editor.module.css";
 
 type Props = {
   code: string;
+  theme: ThemeId;
   onChange: (value: string) => void;
 };
 
-export default function Editor({ code, onChange }: Props) {
+// ── Compartments ───────────────────────────────────────────────────────────
+const themeConfig = new Compartment();
+
+export default function Editor({ code, theme, onChange }: Props) {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
 
@@ -25,43 +32,24 @@ export default function Editor({ code, onChange }: Props) {
           typescript: true,
         }),
 
-        // 🎨 THEME
+        // 🎨 THEME (Dynamic via Compartment)
+        themeConfig.of(THEMES[theme].extension),
+
+        // 🏗 Base Base View Styling
         EditorView.theme({
           "&": {
             height: "100%",
             fontSize: "14px",
-            backgroundColor: "#0b1220",
-            color: "#e5e7eb",
-            textAlign: "left", // Force left alignment here
+            textAlign: "left",
           },
-
-          ".cm-editor": {
-            height: "100%",
-          },
-
+          ".cm-editor": { height: "100%" },
           ".cm-scroller": {
             padding: "16px",
             lineHeight: "1.6",
           },
-
           ".cm-content": {
             fontFamily: "Menlo, Monaco, Consolas, monospace",
-            caretColor: "#22c55e",
             maxWidth: "900px",
-          },
-
-          ".cm-cursor": {
-            borderLeftColor: "#22c55e",
-          },
-
-          ".cm-gutters": {
-            backgroundColor: "#020617",
-            color: "#64748b",
-            borderRight: "1px solid #1e293b",
-          },
-
-          ".cm-activeLine": {
-            backgroundColor: "rgba(255,255,255,0.04)",
           },
         }),
 
@@ -82,7 +70,16 @@ export default function Editor({ code, onChange }: Props) {
     return () => view.destroy();
   }, []);
 
-  // 🔄 Sync React → Editor (important for Prettier)
+  // 🔄 Sync React → Theme (Dynamic Reconfiguration)
+  useEffect(() => {
+    if (!viewRef.current) return;
+
+    viewRef.current.dispatch({
+      effects: themeConfig.reconfigure(THEMES[theme].extension),
+    });
+  }, [theme]);
+
+  // 🔄 Sync React → Editor Content (e.g., Prettier)
   useEffect(() => {
     if (!viewRef.current) return;
 
