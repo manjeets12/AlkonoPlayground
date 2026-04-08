@@ -1,73 +1,53 @@
-# React + TypeScript + Vite
+# AlkonoPlayground 🚀
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AlkonoPlayground is a high-performance, browser-based IDE designed for building and testing React and React Native applications. It is built as a **free tool** specifically tailored for developers to **practice and prepare for technical interviews** in a realistic environment.
 
-Currently, two official plugins are available:
+## 🎯 Project Goals
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The primary goal of AlkonoPlayground is to provide a free, zero-setup, high-fidelity coding experience that simulates a professional interview environment.
 
-## React Compiler
+- **Interview Preparation**: Practice complex React and React Native problems without the distraction of environment configuration.
+- **Zero Cost**: Entirely client-side and open-access, providing a premium practice tool for free.
+- **Instant Feedback**: Incremental, non-blocking bundling translates your thoughts to code updates in milliseconds.
+- **Professional Environment**: Move beyond simple single-file editors; practice using folders, utilities, and components just as you would in a real-world project.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the ESLint configuration
+## ✨ Key Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Multi-file System**: Support for complex folder structures and file relationships.
+- **Rich Editor**: Powered by CodeMirror with TypeScript/JSX syntax highlighting and smart indenting.
+- **Console Proxy**: Real-time log interception that surfaces `console.log`, `warn`, and `error` directly in the playground UI.
+- **Smart Scaffolding**: Modular templates that instantly set up best-practice project structures.
+- **Responsive Preview**: Live rendering with error overlays for both bundling and runtime failures.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🚀 How to Use
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Local Setup
+Clone the repository and install dependencies:
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. The Development Workflow
+1. **Explore**: Use the Left Panel to browse the project structure or create new files and folders.
+2. **Code**: Edit your components in the main editor. The root of your app is typically `main.tsx` or `App.tsx`.
+3. **Run**: Click the **Run** button (or press `Cmd/Ctrl + Enter`) to bundle and update the preview.
+4. **Debug**: Monitor the bottom **Console** panel for logs or runtime errors.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 3. Framework Switching
+Use the **Footer Bar** at the bottom to switch between **React** and **React Native** modes.
+> [!IMPORTANT]
+> Switching frameworks will prompt you to update your main content to match the new platform's environment.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 4. Persistence
+Your files and settings are automatically persisted to `localStorage`. You can manually trigger a save using `Cmd/Ctrl + S` or the Save button in the footer.
+
+## 🛠️ Architecture
+- **Bundler**: `esbuild-wasm` (Running in Web Worker)
+- **Runtime**: `react-native-web` + `react-dom`
+- **Styling**: Vanilla CSS Modules
+- **State Management**: Zero-dependency React Hooks architecture
+
+---
+Built with ❤️ for the Alkono Developer Community.

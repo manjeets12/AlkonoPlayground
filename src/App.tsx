@@ -9,26 +9,16 @@ import Editor from "./components/Editor";
 import TabBar from "./components/TabBar";
 import Logs from "./components/Logs";
 import FooterBar from "./layout/FooterBar";
+import ProblemPortal from "./components/ProblemPortal/ProblemPortal";
 import type { Framework } from "./layout/FooterBar";
 import { usePersistence } from "./hooks/usePersistence";
 
 import styles from "./App.module.css";
+import { useProblemStore } from "./store/useProblemStore";
+import ProblemDetailView from "./components/ProblemDetailView/ProblemDetailView";
 
 
 
-
-const PROBLEM = `Build a card-flip memory game.
-
-Render a 4×4 grid of cards, all face-down. On tap, flip two cards:
-• If they match → stay face-up (matched state)
-• If not → flip back after 800ms
-
-Requirements:
-  – 8 unique emoji pairs (16 cards total)
-  – Shuffle deck on mount
-  – Track and display move counter
-  – Show "You won!" when all pairs are matched
-  – Restart button resets the board`;
 
 export default function App() {
   const [framework, setFramework] = useState<Framework>("react");
@@ -98,88 +88,100 @@ export default function App() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
+  const { isDetailedViewOpen } = useProblemStore();
+
   return (
-    <MainLayout
-      status={status}
-      leftPanel={
-        !isFullscreen &&
-        isLeftPanelOpen && (
-          <LeftPanel
-            files={fs.files}
-            directories={fs.directories}
-            activeFile={fs.activeFile}
-            problem={PROBLEM}
-            isReadOnly={fs.isReadOnly}
-            onOpen={fs.openFile}
-            onCreate={fs.createFile}
-            onDelete={fs.deleteFile}
-            onRename={fs.renameFile}
-          />
-        )
-      }
-      editor={
-        <div className={styles.editorArea}>
-          {!isFullscreen && (
-            <TabBar
-              openTabs={fs.openTabs}
+    <>
+      <ProblemPortal />
+      <MainLayout
+        status={status}
+        leftPanel={
+          !isFullscreen &&
+          isLeftPanelOpen && (
+            <LeftPanel
+              files={fs.files}
+              directories={fs.directories}
               activeFile={fs.activeFile}
-              onSelect={fs.openFile}
-              onClose={fs.closeTab}
+              isReadOnly={fs.isReadOnly}
+              onOpen={fs.openFile}
+              onCreate={fs.createFile}
+              onDelete={fs.deleteFile}
+              onRename={fs.renameFile}
             />
-          )}
-          {isFullscreen && (
-            <button
-              onClick={handleToggleFullscreen}
-              className={styles.exitButton}
-              title="Exit fullscreen"
-            >
-              ✕ Exit
-            </button>
-          )}
-          <Editor
-            key={fs.activeFile} // remount when file switches — avoids stale CodeMirror state
-            code={fs.getContent(fs.activeFile)}
-            onChange={handleCodeChange}
-          />
-        </div>
-      }
-
-
-      bottomPanel={!isFullscreen && <Logs logs={logs} onClear={clearLogs} />}
-      rightPanel={
-        !isFullscreen &&
-        isRightPanelOpen && (
-          <RightPanel
-            ref={iframeRef}
-            status={status}
-            isStale={isStale}
-            lastRanAt={lastRanAt}
-            onRun={handleRun}
-          />
-        )
-      }
-      footer={
-        !isFullscreen && (
-          <FooterBar
-            framework={framework}
-            onChange={handleFrameworkChange}
-            onFormat={handleFormat}
+          )
+        }
+        editor={
+          <div className={styles.editorArea}>
+            {isDetailedViewOpen ? (
+              <ProblemDetailView />
+            ) : (
+              <>
+                {!isFullscreen && (
+                  <TabBar
+                    openTabs={fs.openTabs}
+                    activeFile={fs.activeFile}
+                    onSelect={fs.openFile}
+                    onClose={fs.closeTab}
+                  />
+                )}
+                {isFullscreen && (
+                  <button
+                    onClick={handleToggleFullscreen}
+                    className={styles.exitButton}
+                    title="Exit fullscreen"
+                  >
+                    ✕ Exit
+                  </button>
+                )}
+                <Editor
+                  key={fs.activeFile} // remount when file switches — avoids stale CodeMirror state
+                  code={fs.getContent(fs.activeFile)}
+                  onChange={handleCodeChange}
+                />
+              </>
+            )}
+          </div>
+        }
 
 
 
-            onToggleFullscreen={handleToggleFullscreen}
-            isLeftPanelOpen={isLeftPanelOpen}
-            isRightPanelOpen={isRightPanelOpen}
-            onToggleLeftPanel={() => setIsLeftPanelOpen((v) => !v)}
-            onToggleRightPanel={() => setIsRightPanelOpen((v) => !v)}
-            onSave={handleSave}
-            isSaving={isSaving}
-          />
-        )
-      }
+        bottomPanel={!isFullscreen && <Logs logs={logs} onClear={clearLogs} />}
+        rightPanel={
+          !isFullscreen &&
+          isRightPanelOpen && (
+            <RightPanel
+              ref={iframeRef}
+              status={status}
+              isStale={isStale}
+              lastRanAt={lastRanAt}
+              onRun={handleRun}
+            />
+          )
+        }
+        footer={
+          !isFullscreen && (
+            <FooterBar
+              framework={framework}
+              onChange={handleFrameworkChange}
+              onFormat={handleFormat}
 
 
-    />
+
+              onToggleFullscreen={handleToggleFullscreen}
+              isLeftPanelOpen={isLeftPanelOpen}
+              isRightPanelOpen={isRightPanelOpen}
+              onToggleLeftPanel={() => setIsLeftPanelOpen((v) => !v)}
+              onToggleRightPanel={() => setIsRightPanelOpen((v) => !v)}
+              onSave={handleSave}
+              isSaving={isSaving}
+            />
+          )
+        }
+
+
+      />
+    </>
   );
 }
+
 
