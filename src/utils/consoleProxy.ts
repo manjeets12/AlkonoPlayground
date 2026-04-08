@@ -5,11 +5,26 @@ export function getConsoleProxyScript() {
       const original = window.console;
 
       const serialize = (arg) => {
-        if (arg instanceof Error) return arg.name + ': ' + arg.message;
-        if (typeof arg === 'object' && arg !== null) {
-          try { return JSON.stringify(arg, null, 2); } catch { return String(arg); }
+        try {
+          if (arg instanceof Error) {
+            return {
+              __error: true,
+              name: arg.name,
+              message: arg.message,
+              stack: arg.stack,
+            };
+          }
+          if (typeof arg === 'function') return '[Function: ' + (arg.name || 'anonymous') + ']';
+          if (typeof arg === 'symbol') return arg.toString();
+          if (typeof arg === 'undefined') return 'undefined';
+          
+          // For objects, we'll try to let postMessage handle them, 
+          // but if they are complex we might need a fallback.
+          // However, for this playground, simple JSON-like structures are common.
+          return arg;
+        } catch (e) {
+          return String(arg);
         }
-        return String(arg);
       };
 
       let isProxying = false;
@@ -20,9 +35,15 @@ export function getConsoleProxyScript() {
               if (isProxying) return target[prop](...args);
               isProxying = true;
               try {
-                const message = args.map(serialize).join(' ');
-                window.parent.postMessage({ type: prop, data: message }, '*');
-              } catch (e) {}
+                const serializedArgs = args.map(serialize);
+                window.parent.postMessage({ type: prop, data: serializedArgs }, '*');
+              } catch (e) {
+                // Fallback for non-cloneable data
+                try {
+                   const fallback = args.map(a => String(a));
+                   window.parent.postMessage({ type: prop, data: fallback }, '*');
+                } catch(e2) {}
+              }
               isProxying = false;
               return target[prop](...args);
             };
