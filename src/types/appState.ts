@@ -1,4 +1,4 @@
-import type { FileMap, Framework } from "../hooks/useFileSystem";
+import type { FileMap, Framework } from "./framework";
 
 export interface AppState {
   files: FileMap;
