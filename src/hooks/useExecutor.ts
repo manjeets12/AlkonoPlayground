@@ -9,7 +9,9 @@ export type ExecutionStatus = "idle" | "running" | "success" | "error";
 export interface LogEntry {
   id: string;
   level: "log" | "warn" | "error" | "info";
-  message: string;
+  message?: string; // Kept for backwards compatibility if needed, but we'll use 'data'
+  data?: any[];
+
   source?: string;
   line?: number;
   col?: number;
@@ -88,7 +90,7 @@ export function useExecutor(
         {
           id: newLogId(),
           level,
-          message: msg.data ?? String(msg),
+          data: Array.isArray(msg.data) ? msg.data : [msg.data],
           source: msg.source,
           line: msg.line,
           col: msg.col,
@@ -142,7 +144,7 @@ export function useExecutor(
               ...msg.warnings.map((w) => ({
                 id: newLogId(),
                 level: "warn" as const,
-                message: w.message,
+                data: [w.message],
                 source: w.file,
                 line: w.line,
                 timestamp: Date.now(),
@@ -185,7 +187,7 @@ export function useExecutor(
             ...msg.errors.map((err) => ({
               id: newLogId(),
               level: "error" as const,
-              message: err.message,
+              data: [err.message],
               source: err.file,
               line: err.line,
               col: err.col,
@@ -213,7 +215,7 @@ export function useExecutor(
           {
             id: newLogId(),
             level: "error",
-            message: msg,
+            data: [msg],
             timestamp: Date.now(),
           },
         ]);
