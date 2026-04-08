@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Vendor build artifacts
+public/vendor.bundle.js
+public/vendor.bundle.js.map

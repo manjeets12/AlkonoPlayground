@@ -8,9 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "vendor:bundle": "npx esbuild vendor-entry.js --bundle --outfile=public/vendor.bundle.js --format=iife --define:development=\"development\" --minify",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "vendor:dev": "NODE_ENV=development node esbuild.vendor.config.js",
+    "vendorbuild": "NODE_ENV=production node esbuild.vendor.config.js"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.5",
@@ -29,10 +28,10 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "esbuild": "^0.28.0",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
-    "gh-pages": "^6.3.0",
     "globals": "^17.4.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.0",
