@@ -1,0 +1,76 @@
+.container {
+  display: flex;
+  align-items: stretch;
+  background: #0a0f1e;
+  border-bottom: 1px solid #1e2d4a;
+  overflow-x: auto;
+  min-height: 34px;
+  flex-shrink: 0;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #8899bb;
+  background: transparent;
+  border-right: 1px solid #1e2d4a;
+  border-bottom: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+  user-select: none;
+  position: relative;
+  padding-bottom: 1px;
+}
+
+.tab:hover {
+  color: #3b7ff5;
+  background: rgba(59, 127, 245, 0.04);
+}
+
+.tabActive {
+  color: #e8edf5;
+  background: #060912;
+  border-bottom-color: #3b7ff5;
+  padding-bottom: 0;
+}
+
+.tabName {
+  color: inherit;
+}
+
+.tabExt {
+  color: #2a3d5e;
+}
+
+.tabActive .tabExt {
+  color: #445577;
+}
+
+.closeButton {
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #2a3d5e;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  padding: 0;
+  margin-left: 2px;
+  transition: background 0.1s, color 0.1s;
+  flex-shrink: 0;
+}
+
+.closeButton:hover {
+  background: #1e2d4a;
+  color: #e8edf5;
+}

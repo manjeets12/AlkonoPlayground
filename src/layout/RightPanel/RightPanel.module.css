@@ -1,0 +1,149 @@
+.root {
+  flex: 0.45;
+  display: flex;
+  flex-direction: column;
+  background: #0a0f1e;
+  border-left: 1px solid #1e2d4a;
+  flex-shrink: 0;
+}
+
+.runBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid #1e2d4a;
+  background: #0f1629;
+  flex-shrink: 0;
+}
+
+.runButton {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 14px;
+  background: #3b7ff5;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.runButton:hover:not(:disabled) {
+  background: #2a6fd5;
+  box-shadow: 0 0 12px rgba(59, 127, 245, 0.3);
+}
+
+.runButton:disabled {
+  background: #3d2a08;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.runIcon {
+  display: block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+.stopIcon {
+  display: block;
+  width: 8px;
+  height: 8px;
+  background: #f5a623;
+  border-radius: 1px;
+}
+
+.statusBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(59, 127, 245, 0.1);
+  border: 1px solid #1e2d4a;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-left: 4px;
+}
+
+.statusBadgeIdle {
+  color: #445577;
+  border-color: #1e2d4a;
+}
+
+.statusBadgeRunning {
+  color: #f5a623;
+  background: rgba(245, 166, 35, 0.08);
+  border-color: #f5a623;
+}
+
+.statusBadgeSuccess {
+  color: #22c97a;
+  background: rgba(34, 201, 122, 0.08);
+  border-color: #22c97a;
+}
+
+.statusBadgeError {
+  color: #f5524a;
+  background: rgba(245, 82, 74, 0.08);
+  border-color: #f5524a;
+}
+
+.previewContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.staleIndicator {
+
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: #3d2a08;
+  border: 1px solid #f5a623;
+  color: #f5a623;
+  letter-spacing: 0.04em;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.statusPip {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.previewHeader {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  height: 28px;
+  border-bottom: 1px solid #1e2d4a;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #445577;
+}
