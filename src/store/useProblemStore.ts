@@ -2,25 +2,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Problem } from "../types/problem";
 
-interface ProblemState {
-  problems: Problem[];
-  activeProblemId: number;
-  isPortalOpen: boolean;
-  isDetailedViewOpen: boolean;
-  timerStartedAt: number | null;
-  isTimerActive: boolean;
-  // Actions
-  addProblem: (problem: Omit<Problem, "id">) => void;
-  selectProblem: (id: number) => void;
-  deleteProblem: (id: number) => void;
-  setPortalOpen: (isOpen: boolean) => void;
-  setDetailedViewOpen: (isOpen: boolean) => void;
-  startSolving: () => void;
-  resetTimer: () => void;
-  getActiveProblem: () => Problem;
-}
-
-
 const DEFAULT_PROBLEM: Problem = {
   id: 1,
   title: "Memory Card Game",
@@ -41,15 +22,128 @@ Requirements:
   isDefault: true,
 };
 
+const TODO_PROBLEM: Problem = {
+  id: 2,
+  title: "Advanced TODOs with Tasks",
+  description: `Build a multi-screen TODO application.
+  
+Features:
+• Main screen: List, add, delete and update TODO items.
+• Detail screen: Clicking a TODO opens its task list. Screen title matches the TODO title. Add tasks here.
+• Task logic: Mark tasks as completed with a checkbox on the left.
+• Interaction: Use a BottomSheet for creating TODOs/Tasks. Include one text input and a button (disabled if empty).
+
+Bonus: Add a filter for TODOs with completed tasks.`,
+  durationMinutes: 120,
+  level: "medium",
+  isDefault: true,
+};
+
+const HACKER_NEWS_PROBLEM: Problem = {
+  id: 3,
+  title: "Hacker News Top Stories",
+  description: `Build a Hacker News Top Stories reader.
+
+Requirements:
+• List: Display top stories using the HN API (https://github.com/HackerNews/API).
+• Pagination: Support proper scrolling pagination.
+• Refresh: Option to forcefully refresh the list.
+• Links: Mention the HN platform/API in the UI.`,
+  durationMinutes: 90,
+  level: "hard",
+  isDefault: true,
+};
+
+const TIP_CALCULATOR_PROBLEM: Problem = {
+  id: 4,
+  title: "Premium Tip Calculator",
+  description: `Build a comprehensive Tip Calculation App.
+
+Features:
+• Input: Bill amount (up to 2 decimal places).
+• Tip Selection: Presets for 10%, 15%, 20%, 25% + custom tip %.
+• Splitting: Split the bill among friends.
+• Rounding: Option to round up the total bill (switch).
+• Result: Show per-person bill share if more than 1 person.`,
+  durationMinutes: 90,
+  level: "easy",
+  isDefault: true,
+};
+
+const TASK_ASSIGNER_PROBLEM: Problem = {
+  id: 5,
+  title: "Task Assigner (React Native)",
+  description: `Build a React Native app called Task Assigner.
+
+Initial Render:
+• App title: Task Assigner
+• Filter input at top.
+• FlatList of tasks using the following data:
+
+\`\`\`js
+const TASKS = [
+  { id: '1', title: 'Design UI', description: 'Create wireframes for the app', assignee: 'Alice' },
+  { id: '2', title: 'Write Tests', description: 'Add unit tests for all modules', assignee: 'Bob' },
+  { id: '3', title: 'Fix Bugs', description: 'Resolve open issues on GitHub', assignee: 'Alice' },
+  { id: '4', title: 'Deploy App', description: 'Push latest build to production', assignee: 'Charlie' },
+  { id: '5', title: 'Code Review', description: 'Review PRs from the team', assignee: '' },
+];
+\`\`\`
+
+Features:
+• Filter: Real-time case-insensitive filtering by assignee name.
+• Remove: "Remove Assignee" button clears the assignee.
+• Add: For unassigned tasks, show an inline text input + "Assign" button.
+
+Criteria:
+• Use FlatList for rendering.
+• Tasks with no assignee show "Unassigned".
+• State must stay in memory (no backend).`,
+  durationMinutes: 45,
+  level: "medium",
+  isDefault: true,
+};
+
+export const DEFAULT_PROBLEMS = [
+  DEFAULT_PROBLEM,
+  TODO_PROBLEM,
+  HACKER_NEWS_PROBLEM,
+  TIP_CALCULATOR_PROBLEM,
+  TASK_ASSIGNER_PROBLEM
+];
+
+interface ProblemState {
+  userProblems: Problem[];
+  activeProblemId: number;
+  isPortalOpen: boolean;
+  isDetailedViewOpen: boolean;
+  timerStartedAt: number | null;
+  isTimerActive: boolean;
+  // Actions
+  addProblem: (problem: Omit<Problem, "id">) => void;
+  selectProblem: (id: number) => void;
+  deleteProblem: (id: number) => void;
+  setPortalOpen: (isOpen: boolean) => void;
+  setDetailedViewOpen: (isOpen: boolean) => void;
+  startSolving: () => void;
+  resetTimer: () => void;
+  getActiveProblem: () => Problem;
+  getProblems: () => Problem[];
+}
+
 export const useProblemStore = create<ProblemState>()(
   persist(
     (set, get) => ({
-      problems: [DEFAULT_PROBLEM],
+      userProblems: [],
       activeProblemId: DEFAULT_PROBLEM.id,
       isPortalOpen: false,
       isDetailedViewOpen: true,
       timerStartedAt: null,
       isTimerActive: false,
+
+      getProblems: () => {
+        return [...DEFAULT_PROBLEMS, ...get().userProblems];
+      },
 
       addProblem: (problemData) => {
         const newProblem: Problem = {
@@ -57,8 +151,8 @@ export const useProblemStore = create<ProblemState>()(
           id: Date.now(),
         };
         set((state) => ({
-          problems: [...state.problems, newProblem],
-          activeProblemId: newProblem.id, // Auto-select new problem
+          userProblems: [...state.userProblems, newProblem],
+          activeProblemId: newProblem.id, 
           isPortalOpen: false,
           isTimerActive: false,
           timerStartedAt: null,
@@ -78,13 +172,12 @@ export const useProblemStore = create<ProblemState>()(
 
       deleteProblem: (id) => {
         set((state) => {
-          const newProblems = state.problems.filter((p) => p.id !== id);
-          // If active problem is deleted, fallback to default
+          const newUserProblems = state.userProblems.filter((p) => p.id !== id);
           const newActiveId =
             state.activeProblemId === id
               ? DEFAULT_PROBLEM.id
               : state.activeProblemId;
-          return { problems: newProblems, activeProblemId: newActiveId };
+          return { userProblems: newUserProblems, activeProblemId: newActiveId };
         });
       },
 
@@ -105,15 +198,28 @@ export const useProblemStore = create<ProblemState>()(
       },
 
       getActiveProblem: () => {
-        const { problems, activeProblemId } = get();
+        const { userProblems, activeProblemId } = get();
         return (
-          problems.find((p) => p.id === activeProblemId) || DEFAULT_PROBLEM
+          DEFAULT_PROBLEMS.find((p) => p.id === activeProblemId) ||
+          userProblems.find((p) => p.id === activeProblemId) || 
+          DEFAULT_PROBLEM
         );
       },
     }),
 
     {
       name: "alkono_problems_storage",
+      version: 1,
+      migrate: (persistedState: any, version: number) => {
+        if (version === 0 && persistedState.problems) {
+          return {
+            ...persistedState,
+            userProblems: persistedState.problems.filter((p: any) => !p.isDefault),
+            problems: undefined
+          };
+        }
+        return persistedState;
+      }
     },
   ),
 );

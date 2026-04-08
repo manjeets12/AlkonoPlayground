@@ -1,7 +1,7 @@
 .root {
   height: 100%;
   position: relative;
-  background: #0b1220;
+  background: transparent;
 }
 
 .iframe {

@@ -2,137 +2,146 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #020617;
-  color: #f1f5f9;
-  padding: 40px;
-  overflow-y: auto;
+  background: #0d1117;
+  color: #c9d1d9;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #30363d;
+  background: #161b22;
 }
 
 .backBtn {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  color: #3b82f6;
-  padding: 8px 16px;
-  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: #8b949e;
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s;
 }
 
 .backBtn:hover {
-  background: #3b82f6;
-  color: white;
+  color: #c9d1d9;
 }
 
 .meta {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
 }
 
 .levelBadge {
-  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
-  padding: 4px 12px;
-  border-radius: 99px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
 }
 
-.easy {
-  background: rgba(34, 197, 94, 0.1);
-  color: #4ade80;
-  border: 1px solid #22c55e;
-}
-
-.medium {
-  background: rgba(234, 179, 8, 0.1);
-  color: #facc15;
-  border: 1px solid #eab308;
-}
-
-.hard {
-  background: rgba(239, 68, 68, 0.1);
-  color: #f87171;
-  border: 1px solid #ef4444;
-}
+.easy { background: rgba(63, 185, 80, 0.15); color: #3fb950; border: 1px solid rgba(63, 185, 80, 0.3); }
+.medium { background: rgba(210, 153, 34, 0.15); color: #d29922; border: 1px solid rgba(210, 153, 34, 0.3); }
+.hard { background: rgba(248, 81, 73, 0.15); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.3); }
 
 .duration {
-  font-size: 0.9rem;
-  color: #94a3b8;
-  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #8b949e;
 }
 
 .content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 48px 24px;
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
+  text-align: left;
 }
 
 .title {
-  font-size: 2.5rem;
-  margin: 0 0 16px 0;
-  color: #f8fafc;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #f0f6fc;
 }
 
 .divider {
   height: 1px;
-  background: linear-gradient(to right, #3b82f6, transparent);
-  margin-bottom: 32px;
+  background: #30363d;
+  margin: 32px 0;
 }
 
 .description {
-  font-family: inherit;
-  font-size: 1.1rem;
-  line-height: 1.8;
-  color: #cbd5e1;
-  white-space: pre-wrap;
-  word-break: break-word;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #c9d1d9;
   text-align: left;
 }
 
+.link {
+  color: #58a6ff;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.link:hover {
+  color: #79c0ff;
+  text-decoration: underline;
+}
+
+.paragraph {
+  margin-bottom: 20px;
+  white-space: pre-wrap;
+}
+
+.codeBlock {
+  background: #010409;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 24px 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  overflow-x: auto;
+  color: #e6edf3;
+  line-height: 1.6;
+}
+
 .footerAction {
-  margin-top: 64px;
+  padding: 32px 24px;
+  border-top: 1px solid #30363d;
   display: flex;
   justify-content: center;
-  padding-bottom: 80px;
+  background: #0d1117;
 }
 
 .startBtn {
-  background: #3b82f6;
+  background: #238636;
   color: white;
   border: none;
-  padding: 16px 48px;
-  font-size: 1.25rem;
-  font-weight: 700;
-  border-radius: 8px;
+  padding: 14px 48px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2), 0 2px 4px -1px rgba(59, 130, 246, 0.1);
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.startBtn:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3), 0 4px 6px -2px rgba(59, 130, 246, 0.2);
-}
-
-.startBtn:active {
-  transform: translateY(0);
+.startBtn:hover:not(:disabled) {
+  background: #2ea043;
+  transform: translateY(-1px);
 }
 
 .startBtn:disabled {
-  background: #1e293b;
-  color: #475569;
+  background: #30363d;
+  color: #8b949e;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
-  border: 1px solid #334155;
 }

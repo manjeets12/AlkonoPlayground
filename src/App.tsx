@@ -16,6 +16,7 @@ import { formatCode } from "./utils/formatCode";
 import styles from "./App.module.css";
 import { useProblemStore } from "./store/useProblemStore";
 import ProblemDetailView from "./components/ProblemDetailView/ProblemDetailView";
+import type { ThemeId } from "./utils/editorThemes";
 
 
 
@@ -24,7 +25,8 @@ export default function App() {
   const [framework, setFramework] = useState<Framework>("react");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
-  const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
+  const [editorTheme, setEditorTheme] = useState<ThemeId>("dark");
 
   // ── File system ────────────────────────────────────────────────────────────
   const { restoreState, updateMainContent, ...fs } = useFileSystem();
@@ -141,6 +143,7 @@ export default function App() {
                 <Editor
                   key={fs.activeFile} // remount when file switches — avoids stale CodeMirror state
                   code={fs.getContent(fs.activeFile)}
+                  theme={editorTheme}
                   onChange={handleCodeChange}
                 />
               </>
@@ -156,6 +159,7 @@ export default function App() {
           isRightPanelOpen && (
             <RightPanel
               ref={iframeRef}
+              framework={framework}
               status={status}
               isStale={isStale}
               lastRanAt={lastRanAt}
@@ -179,6 +183,8 @@ export default function App() {
               onToggleRightPanel={() => setIsRightPanelOpen((v) => !v)}
               onSave={handleSave}
               isSaving={isSaving}
+              theme={editorTheme}
+              onThemeChange={setEditorTheme}
             />
           )
         }

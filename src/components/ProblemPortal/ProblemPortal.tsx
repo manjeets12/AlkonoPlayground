@@ -5,7 +5,7 @@ import styles from "./ProblemPortal.module.css";
 
 export default function ProblemPortal() {
   const { 
-    problems, 
+    getProblems, 
     activeProblemId, 
     isPortalOpen, 
     setPortalOpen, 
@@ -13,6 +13,8 @@ export default function ProblemPortal() {
     selectProblem, 
     deleteProblem 
   } = useProblemStore();
+
+  const problems = getProblems();
 
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState({
