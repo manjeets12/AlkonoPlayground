@@ -97,3 +97,42 @@
   word-break: break-word;
   text-align: left;
 }
+
+.footerAction {
+  margin-top: 64px;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 80px;
+}
+
+.startBtn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 16px 48px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2), 0 2px 4px -1px rgba(59, 130, 246, 0.1);
+}
+
+.startBtn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3), 0 4px 6px -2px rgba(59, 130, 246, 0.2);
+}
+
+.startBtn:active {
+  transform: translateY(0);
+}
+
+.startBtn:disabled {
+  background: #1e293b;
+  color: #475569;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  border: 1px solid #334155;
+}

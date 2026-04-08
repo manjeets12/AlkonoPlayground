@@ -2,7 +2,7 @@ import { useProblemStore } from "../../store/useProblemStore";
 import styles from "./ProblemDetailView.module.css";
 
 export default function ProblemDetailView() {
-  const { getActiveProblem, setDetailedViewOpen } = useProblemStore();
+  const { getActiveProblem, setDetailedViewOpen, startSolving, isTimerActive } = useProblemStore();
   const problem = getActiveProblem();
 
   return (
@@ -28,6 +28,16 @@ export default function ProblemDetailView() {
         <pre className={styles.description}>
           {problem.description}
         </pre>
+
+        <div className={styles.footerAction}>
+          <button 
+            className={styles.startBtn}
+            onClick={() => startSolving()}
+            disabled={isTimerActive}
+          >
+            {isTimerActive ? "Solving in Progress..." : "Start Solving"}
+          </button>
+        </div>
       </main>
     </div>
   );

@@ -7,13 +7,16 @@ interface ProblemState {
   activeProblemId: number;
   isPortalOpen: boolean;
   isDetailedViewOpen: boolean;
-  
+  timerStartedAt: number | null;
+  isTimerActive: boolean;
   // Actions
   addProblem: (problem: Omit<Problem, "id">) => void;
   selectProblem: (id: number) => void;
   deleteProblem: (id: number) => void;
   setPortalOpen: (isOpen: boolean) => void;
   setDetailedViewOpen: (isOpen: boolean) => void;
+  startSolving: () => void;
+  resetTimer: () => void;
   getActiveProblem: () => Problem;
 }
 
@@ -44,7 +47,9 @@ export const useProblemStore = create<ProblemState>()(
       problems: [DEFAULT_PROBLEM],
       activeProblemId: DEFAULT_PROBLEM.id,
       isPortalOpen: false,
-      isDetailedViewOpen: false,
+      isDetailedViewOpen: true,
+      timerStartedAt: null,
+      isTimerActive: false,
 
       addProblem: (problemData) => {
         const newProblem: Problem = {
@@ -55,11 +60,20 @@ export const useProblemStore = create<ProblemState>()(
           problems: [...state.problems, newProblem],
           activeProblemId: newProblem.id, // Auto-select new problem
           isPortalOpen: false,
+          isTimerActive: false,
+          timerStartedAt: null,
+          isDetailedViewOpen: true,
         }));
       },
 
       selectProblem: (id) => {
-        set({ activeProblemId: id, isPortalOpen: false });
+        set({ 
+          activeProblemId: id, 
+          isPortalOpen: false, 
+          isDetailedViewOpen: true,
+          isTimerActive: false,
+          timerStartedAt: null
+        });
       },
 
       deleteProblem: (id) => {
@@ -77,6 +91,18 @@ export const useProblemStore = create<ProblemState>()(
       setPortalOpen: (isOpen) => set({ isPortalOpen: isOpen }),
 
       setDetailedViewOpen: (isOpen) => set({ isDetailedViewOpen: isOpen }),
+
+      startSolving: () => {
+        set({ 
+          isDetailedViewOpen: false, 
+          isTimerActive: true, 
+          timerStartedAt: Date.now() 
+        });
+      },
+
+      resetTimer: () => {
+        set({ isTimerActive: false, timerStartedAt: null });
+      },
 
       getActiveProblem: () => {
         const { problems, activeProblemId } = get();

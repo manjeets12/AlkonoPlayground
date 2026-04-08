@@ -1,4 +1,5 @@
 import styles from "./FooterBar.module.css";
+import { useProblemTimer } from "../../hooks/useProblemTimer";
 
 export type Framework = "react" | "react-native";
 
@@ -28,6 +29,8 @@ export default function FooterBar({
   onSave,
   isSaving,
 }: FooterBarProps) {
+  const { formattedTime, isOver, isTimerActive } = useProblemTimer();
+
   return (
     <footer className={styles.root}>
       <div className={styles.left}>
@@ -98,6 +101,13 @@ export default function FooterBar({
 
 
       <div className={styles.right}>
+        {isTimerActive && (
+          <div className={`${styles.timerContainer} ${isOver ? styles.timerOver : ''}`}>
+            {isOver && <span className={styles.toast}>Time's up!</span>}
+            <span className={styles.time}>{formattedTime}</span>
+          </div>
+        )}
+        <div className={styles.divider} />
         <svg
           className={styles.settingsIcon}
           width="14"

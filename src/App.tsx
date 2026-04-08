@@ -12,7 +12,7 @@ import FooterBar from "./layout/FooterBar";
 import ProblemPortal from "./components/ProblemPortal/ProblemPortal";
 import type { Framework } from "./layout/FooterBar";
 import { usePersistence } from "./hooks/usePersistence";
-
+import { formatCode } from "./utils/formatCode";
 import styles from "./App.module.css";
 import { useProblemStore } from "./store/useProblemStore";
 import ProblemDetailView from "./components/ProblemDetailView/ProblemDetailView";
@@ -66,9 +66,14 @@ export default function App() {
     run(fs.snapshot(), framework);
   }, [run, fs, framework]);
 
-  const handleFormat = useCallback(() => {
-    // Placeholder for format functionality
-  }, []);
+  const handleFormat = useCallback(async () => {
+    const currentCode = fs.getContent(fs.activeFile);
+    const formattedCode = await formatCode(currentCode, fs.activeFile);
+
+    if (formattedCode !== currentCode) {
+      fs.setContent(fs.activeFile, formattedCode);
+    }
+  }, [fs]);
 
   const handleToggleFullscreen = useCallback(async () => {
     try {
