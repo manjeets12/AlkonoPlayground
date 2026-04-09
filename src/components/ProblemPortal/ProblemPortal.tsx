@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useProblemStore } from "../../store/useProblemStore";
 import type { ProblemLevel } from "../../types/problem";
+import { trackEvent } from "../../services/analytics";
 import styles from "./ProblemPortal.module.css";
 
 export default function ProblemPortal() {
@@ -46,6 +47,7 @@ export default function ProblemPortal() {
         level: "medium", 
         imageUrl: "" 
       });
+      trackEvent("new_problem_submission_clicked");
     }
   };
 
@@ -103,7 +105,13 @@ export default function ProblemPortal() {
                   </div>
                 ))}
               </div>
-              <button className={styles.createBtn} onClick={() => setIsCreating(true)}>
+              <button 
+                className={styles.createBtn} 
+                onClick={() => {
+                  setIsCreating(true);
+                  trackEvent("create_new_challenge_clicked");
+                }}
+              >
                 + Create New Challenge
               </button>
             </>

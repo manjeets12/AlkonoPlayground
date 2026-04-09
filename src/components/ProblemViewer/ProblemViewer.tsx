@@ -1,5 +1,6 @@
 import { useProblemStore } from "../../store/useProblemStore";
 import ProblemDescription from "../ProblemDescription";
+import { trackEvent } from "../../services/analytics";
 import styles from "./ProblemViewer.module.css";
 
 export default function ProblemViewer() {
@@ -15,7 +16,10 @@ export default function ProblemViewer() {
           <div className={styles.actions}>
             <button 
               className={styles.changeBtn}
-              onClick={() => setPortalOpen(true)}
+              onClick={() => {
+                setPortalOpen(true);
+                trackEvent("change_problem_clicked");
+              }}
               title="Select different problem"
             >
               Change
@@ -35,7 +39,10 @@ export default function ProblemViewer() {
           </div>
           <button 
             className={styles.viewDetailsBtn} 
-            onClick={() => setDetailedViewOpen(true)}
+            onClick={() => {
+              setDetailedViewOpen(true);
+              trackEvent("view_requirements_clicked");
+            }}
             title="View full requirement"
           >
             View Details
@@ -48,7 +55,10 @@ export default function ProblemViewer() {
         <div className={styles.solvedActionRow}>
           <button 
             className={styles.markSolvedBtn}
-            onClick={() => markAsSolved(activeProblem.id)}
+            onClick={() => {
+              markAsSolved(activeProblem.id);
+              trackEvent("solved_clicked");
+            }}
           >
             Mark as Solved
           </button>
