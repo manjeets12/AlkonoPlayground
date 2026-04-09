@@ -17,21 +17,35 @@ export default function ProblemPortal() {
   const problems = getProblems();
 
   const [isCreating, setIsCreating] = useState(false);
+  const [levelFilter, setLevelFilter] = useState<ProblemLevel | "all">("all");
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     durationMinutes: 30,
     level: "medium" as ProblemLevel,
+    imageUrl: "",
   });
 
   if (!isPortalOpen) return null;
 
+  const filteredProblems = problems.filter(p => levelFilter === "all" || p.level === levelFilter);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.title && formData.description) {
-      addProblem(formData);
+      const { imageUrl, ...rest } = formData;
+      addProblem({
+        ...rest,
+        images: imageUrl ? [imageUrl] : [],
+      });
       setIsCreating(false);
-      setFormData({ title: "", description: "", durationMinutes: 30, level: "medium" });
+      setFormData({ 
+        title: "", 
+        description: "", 
+        durationMinutes: 30, 
+        level: "medium", 
+        imageUrl: "" 
+      });
     }
   };
 
@@ -46,15 +60,30 @@ export default function ProblemPortal() {
         <div className={styles.content}>
           {!isCreating ? (
             <>
+              <div className={styles.filterRow}>
+                {(["all", "easy", "medium", "hard"] as const).map(lvl => (
+                  <button 
+                    key={lvl}
+                    className={`${styles.filterTab} ${levelFilter === lvl ? styles.activeTab : ""}`}
+                    onClick={() => setLevelFilter(lvl)}
+                  >
+                    {lvl}
+                  </button>
+                ))}
+              </div>
+
               <div className={styles.list}>
-                {problems.map((p) => (
+                {filteredProblems.map((p) => (
                   <div 
                     key={p.id} 
                     className={`${styles.item} ${p.id === activeProblemId ? styles.active : ""}`}
                     onClick={() => selectProblem(p.id)}
                   >
                     <div className={styles.itemHeader}>
-                      <span className={styles.itemTitle}>{p.title}</span>
+                      <div className={styles.titleGroup}>
+                        {p.isSolved && <span className={styles.solvedTag} title="Solved">✓</span>}
+                        <span className={styles.itemTitle}>{p.title}</span>
+                      </div>
                       <span className={`${styles.levelBadge} ${styles[p.level]}`}>{p.level}</span>
                     </div>
                     <div className={styles.itemMeta}>
@@ -123,6 +152,15 @@ export default function ProblemPortal() {
                   onChange={e => setFormData({...formData, description: e.target.value})}
                   placeholder="Describe the challenge..."
                   required
+                />
+              </div>
+
+              <div className={styles.field}>
+                <label>Sample Image URL (Optional)</label>
+                <input 
+                  value={formData.imageUrl}
+                  onChange={e => setFormData({...formData, imageUrl: e.target.value})}
+                  placeholder="https://example.com/image.png"
                 />
               </div>
 
