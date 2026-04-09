@@ -564,4 +564,104 @@ Mobile-specific considerations:
     level: "medium",
     isDefault: true,
   },
+  {
+    id: "transaction-list",
+    title: "Transaction List with Filters",
+    description: `Build a Transaction List UI that displays financial transactions with filtering capabilities.
+
+### Data Source
+The user should create a \`transactions.json\` file with the following structure:
+
+\`\`\`json
+[
+  {
+    "id": "txn_001",
+    "amount": 1200,
+    "date": "2026-04-01T10:30:00Z",
+    "txnType": "credit",
+    "location": {
+      "address": "221B Baker Street",
+      "city": "London",
+      "latitude": 51.5237,
+      "longitude": -0.1585
+    }
+  },
+  {
+    "id": "txn_002",
+    "amount": 450,
+    "date": "2026-04-02T14:10:00Z",
+    "txnType": "debit",
+    "location": {
+      "address": "MG Road",
+      "city": "Bengaluru",
+      "latitude": 12.9716,
+      "longitude": 77.5946
+    }
+  },
+  {
+    "id": "txn_003",
+    "amount": 999,
+    "date": "2026-04-03T09:20:00Z",
+    "txnType": "credit",
+    "location": {
+      "address": "Times Square",
+      "city": "New York",
+      "latitude": 40.758,
+      "longitude": -73.9855
+    }
+  },
+  {
+    "id": "txn_004",
+    "amount": 250,
+    "date": "2026-04-04T18:45:00Z",
+    "txnType": "debit",
+    "location": {
+      "address": "Connaught Place",
+      "city": "Delhi",
+      "latitude": 28.6315,
+      "longitude": 77.2167
+    }
+  },
+  {
+    "id": "txn_005",
+    "amount": 1750,
+    "date": "2026-04-05T11:00:00Z",
+    "txnType": "credit",
+    "location": {
+      "address": "Marina Bay Sands",
+      "city": "Singapore",
+      "latitude": 1.2834,
+      "longitude": 103.8607
+    }
+  }
+]
+\`\`\`
+
+### Requirements
+
+**1. Filter Tabs**  
+Provide 3 filters: All, Credit, Debit. Selecting a filter updates the list accordingly.
+
+**2. Transaction Card UI**  
+Each transaction card should show:
+- Line 1: \`location.address\`
+- Line 2: \`location.city\` • \`amount\` • \`txnType\` (Credit / Debit)
+
+**3. Data Handling**  
+- Import data from \`transactions.json\`
+- Filtering should be done client-side
+
+**4. Performance & UX**  
+- Use \`FlatList\` for performance
+- Ensure touch-friendly padding and clear readability
+
+### Bonus
+- Format amount with currency symbol
+- Color-code: Green for Credit, Red for Debit
+- Sort by date (latest first)`,
+    durationMinutes: 45,
+    level: "medium",
+    isDefault: true,
+    images: ["https://i.ibb.co/6cMDm2sg/Chat-GPT-Image-Apr-9-2026-03-35-48-PM.png"],
+  },
 ];
