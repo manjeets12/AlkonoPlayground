@@ -54,7 +54,10 @@ export default function ProblemPortal() {
                     onClick={() => selectProblem(p.id)}
                   >
                     <div className={styles.itemHeader}>
-                      <span className={styles.itemTitle}>{p.title}</span>
+                      <div className={styles.titleGroup}>
+                        {p.isSolved && <span className={styles.solvedTag} title="Solved">✓</span>}
+                        <span className={styles.itemTitle}>{p.title}</span>
+                      </div>
                       <span className={`${styles.levelBadge} ${styles[p.level]}`}>{p.level}</span>
                     </div>
                     <div className={styles.itemMeta}>

@@ -35,7 +35,7 @@ export default function FooterBar({
   theme,
   onThemeChange,
 }: FooterBarProps) {
-  const { formattedTime, isOver, isTimerActive } = useProblemTimer();
+  const { formattedTime, isOver, isTimerActive, formattedOvershoot } = useProblemTimer();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleThemeSelect = (newTheme: ThemeId) => {
@@ -115,7 +115,11 @@ export default function FooterBar({
       <div className={styles.right}>
         {isTimerActive && (
           <div className={`${styles.timerContainer} ${isOver ? styles.timerOver : ''}`}>
-            {isOver && <span className={styles.toast}>Time's up!</span>}
+            {isOver && (
+              <span className={styles.toast}>
+                Time's up! {formattedOvershoot && `(+${formattedOvershoot})`}
+              </span>
+            )}
             <span className={styles.time}>{formattedTime}</span>
           </div>
         )}

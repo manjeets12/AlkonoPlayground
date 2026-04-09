@@ -3,7 +3,7 @@ import ProblemDescription from "../ProblemDescription";
 import styles from "./ProblemDetailView.module.css";
 
 export default function ProblemDetailView() {
-  const { getActiveProblem, setDetailedViewOpen, startSolving, isTimerActive } = useProblemStore();
+  const { getActiveProblem, setDetailedViewOpen, startSolving, isTimerActive, markAsSolved } = useProblemStore();
   const problem = getActiveProblem();
 
   return (
@@ -16,6 +16,9 @@ export default function ProblemDetailView() {
           ← Back to Code
         </button>
         <div className={styles.meta}>
+          {problem.isSolved && (
+            <span className={styles.solvedBadge}>✓ Solved</span>
+          )}
           <span className={`${styles.levelBadge} ${styles[problem.level]}`}>
             {problem.level}
           </span>
@@ -33,13 +36,33 @@ export default function ProblemDetailView() {
         />
 
         <div className={styles.footerAction}>
-          <button 
-            className={styles.startBtn}
-            onClick={() => startSolving()}
-            disabled={isTimerActive}
-          >
-            {isTimerActive ? "Solving in Progress..." : "Start Solving"}
-          </button>
+          {!problem.isSolved && (
+            <button 
+              className={styles.startBtn}
+              onClick={() => startSolving()}
+              disabled={isTimerActive}
+            >
+              {isTimerActive ? "Solving in Progress..." : "Start Solving"}
+            </button>
+          )}
+          
+          {isTimerActive && (
+            <button 
+              className={styles.solvedBtn}
+              onClick={() => markAsSolved(problem.id)}
+            >
+              Mark as Solved
+            </button>
+          )}
+
+          {problem.isSolved && !isTimerActive && (
+            <button 
+              className={styles.startBtn}
+              onClick={() => startSolving()}
+            >
+              Solve Again
+            </button>
+          )}
         </div>
       </main>
     </div>

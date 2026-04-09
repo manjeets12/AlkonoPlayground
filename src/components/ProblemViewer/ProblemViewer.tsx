@@ -3,7 +3,7 @@ import ProblemDescription from "../ProblemDescription";
 import styles from "./ProblemViewer.module.css";
 
 export default function ProblemViewer() {
-  const { getActiveProblem, setPortalOpen, setDetailedViewOpen } = useProblemStore();
+  const { getActiveProblem, setPortalOpen, setDetailedViewOpen, isTimerActive, markAsSolved } = useProblemStore();
   const activeProblem = getActiveProblem();
 
   return (
@@ -29,6 +29,9 @@ export default function ProblemViewer() {
               {activeProblem.level}
             </span>
             <span className={styles.duration}>⏱ {activeProblem.durationMinutes}m</span>
+            {activeProblem.isSolved && (
+              <span className={styles.solvedBadge} title="Solved">✓</span>
+            )}
           </div>
           <button 
             className={styles.viewDetailsBtn} 
@@ -39,6 +42,18 @@ export default function ProblemViewer() {
           </button>
         </div>
       </div>
+
+      {/* ── Solve Action ────────────────────────────────────────────── */}
+      {isTimerActive && (
+        <div className={styles.solvedActionRow}>
+          <button 
+            className={styles.markSolvedBtn}
+            onClick={() => markAsSolved(activeProblem.id)}
+          >
+            Mark as Solved
+          </button>
+        </div>
+      )}
 
       {/* ── Summary Content ─────────────────────────────────────────── */}
       <div className={styles.content}>
