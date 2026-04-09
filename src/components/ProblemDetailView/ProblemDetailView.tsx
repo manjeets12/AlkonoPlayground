@@ -1,5 +1,6 @@
 import { useProblemStore } from "../../store/useProblemStore";
 import ProblemDescription from "../ProblemDescription";
+import { trackEvent } from "../../services/analytics";
 import styles from "./ProblemDetailView.module.css";
 
 export default function ProblemDetailView() {
@@ -54,7 +55,10 @@ export default function ProblemDetailView() {
           {!problem.isSolved && (
             <button 
               className={styles.startBtn}
-              onClick={() => startSolving()}
+              onClick={() => {
+                startSolving();
+                trackEvent("start_solving_clicked");
+              }}
               disabled={isTimerActive}
             >
               {isTimerActive ? "Solving in Progress..." : "Start Solving"}
@@ -64,7 +68,10 @@ export default function ProblemDetailView() {
           {isTimerActive && (
             <button 
               className={styles.solvedBtn}
-              onClick={() => markAsSolved(problem.id)}
+              onClick={() => {
+                markAsSolved(problem.id);
+                trackEvent("solved_clicked");
+              }}
             >
               Mark as Solved
             </button>
@@ -73,7 +80,10 @@ export default function ProblemDetailView() {
           {problem.isSolved && !isTimerActive && (
             <button 
               className={styles.startBtn}
-              onClick={() => startSolving()}
+              onClick={() => {
+                startSolving();
+                trackEvent("start_solving_clicked");
+              }}
             >
               Solve Again
             </button>
