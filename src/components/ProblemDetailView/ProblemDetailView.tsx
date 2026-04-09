@@ -28,12 +28,27 @@ export default function ProblemDetailView() {
 
       <main className={styles.content}>
         <h1 className={styles.title}>{problem.title}</h1>
-        <div className={styles.divider} />
-        
         <ProblemDescription 
           description={problem.description} 
           variant="detailed" 
         />
+
+        {problem.images && problem.images.length > 0 && (
+          <div className={styles.imagesContainer}>
+            <p className={styles.imagesTitle}>Sample Implementation:</p>
+            <div className={styles.imagesList}>
+              {problem.images.map((img, idx) => (
+                <img 
+                  key={idx}
+                  src={img} 
+                  alt={`${problem.title} Sample ${idx + 1}`} 
+                  className={styles.imageItem}
+                  onClick={() => window.open(img, '_blank')}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className={styles.footerAction}>
           {!problem.isSolved && (

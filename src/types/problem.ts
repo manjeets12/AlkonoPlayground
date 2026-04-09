@@ -8,4 +8,5 @@ export interface Problem {
   level: ProblemLevel;
   isDefault?: boolean;
   isSolved?: boolean;
+  images?: string[];
 }

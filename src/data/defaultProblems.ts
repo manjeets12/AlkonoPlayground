@@ -494,10 +494,11 @@ Features:
 Mobile-specific considerations:
 • Swatches must be at least 44×44pt with adequate spacing — use a 4-column grid with flex.
 • Copy feedback must be a non-blocking toast (absolute positioned), not an alert().
-• Use @react-native-clipboard/clipboard for clipboard access.`,
-    durationMinutes: 25, // Easy
-    level: "easy",
+• Use a mock for copying behavior for the mobile app, as external libraries are not supported`,
+    durationMinutes: 45, 
+    level: "medium",
     isDefault: true,
+    images: ["https://i.ibb.co/vvVRGGp9/Chat-GPT-Image-Apr-9-2026-01-57-26-PM.png"],
   },
   {
     id: "character-counter",
