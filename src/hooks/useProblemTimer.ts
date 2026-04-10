@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useProblemStore } from '../store/useProblemStore';
+import { formatTime } from '../utils/time';
 
 export function useProblemTimer() {
   const { timerStartedAt, isTimerActive, getActiveProblem } = useProblemStore();
@@ -14,12 +15,6 @@ export function useProblemTimer() {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, [isTimerActive, timerStartedAt]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
 
   // ── Derived State (Current - End) ──────────────────────────────────────────
   if (!isTimerActive || !timerStartedAt) {

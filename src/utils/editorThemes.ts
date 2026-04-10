@@ -31,13 +31,24 @@ const darkTheme = EditorView.theme({
 
 const darkHighlight = syntaxHighlighting(HighlightStyle.define([
   { tag: t.keyword, color: "#c678dd" },
-  { tag: t.variableName, color: "#e06c75" },
-  { tag: t.propertyName, color: "#61afef" },
-  { tag: t.string, color: "#98c379" },
-  { tag: t.comment, color: "#5c6370", fontStyle: "italic" },
-  { tag: t.number, color: "#d19a66" },
-  { tag: t.function(t.variableName), color: "#61afef" },
-  { tag: t.className, color: "#e5c07b" },
+  { tag: [t.name, t.deleted, t.character, t.propertyName, t.macroName], color: "#e06c75" },
+  { tag: [t.function(t.variableName), t.labelName], color: "#61afef" },
+  { tag: [t.color, t.constant(t.name), t.standard(t.name)], color: "#d19a66" },
+  { tag: [t.definition(t.name), t.separator], color: "#abb2bf" },
+  { tag: [t.typeName, t.className, t.number, t.changed, t.annotation, t.modifier, t.self, t.namespace], color: "#e5c07b" },
+  { tag: [t.operator, t.operatorKeyword, t.url, t.escape, t.regexp, t.link, t.special(t.string)], color: "#56b6c2" },
+  { tag: [t.meta, t.comment], color: "#5c6370" },
+  { tag: t.strong, fontWeight: "bold" },
+  { tag: t.emphasis, fontStyle: "italic" },
+  { tag: t.strikethrough, textDecoration: "line-through" },
+  { tag: t.link, color: "#5c6370", textDecoration: "underline" },
+  { tag: t.heading, fontWeight: "bold", color: "#61afef" },
+  { tag: [t.atom, t.bool, t.special(t.variableName)], color: "#d19a66" },
+  { tag: [t.processingInstruction, t.string, t.inserted], color: "#98c379" },
+  { tag: t.invalid, color: "#ff0000" },
+  // JSX Support
+  { tag: t.tagName, color: "#e06c75" },
+  { tag: t.attributeName, color: "#d19a66" },
 ]));
 
 // ── Light Theme ───────────────────────────────────────────────────────────
@@ -61,12 +72,15 @@ const lightTheme = EditorView.theme({
 
 const lightHighlight = syntaxHighlighting(HighlightStyle.define([
   { tag: t.keyword, color: "#d73a49" },
-  { tag: t.variableName, color: "#e36209" },
-  { tag: t.propertyName, color: "#005cc5" },
-  { tag: t.string, color: "#032f62" },
+  { tag: [t.variableName, t.propertyName], color: "#e36209" },
+  { tag: [t.typeName, t.className], color: "#6f42c1" },
+  { tag: [t.string, t.inserted], color: "#032f62" },
   { tag: t.comment, color: "#6a737d", fontStyle: "italic" },
-  { tag: t.number, color: "#005cc5" },
+  { tag: [t.number, t.bool, t.null], color: "#005cc5" },
   { tag: t.function(t.variableName), color: "#6f42c1" },
+  { tag: [t.operator, t.punctuation], color: "#24292e" },
+  { tag: t.tagName, color: "#22863a" },
+  { tag: t.attributeName, color: "#6f42c1" },
 ]));
 
 // ── Midnight Ocean Theme ──────────────────────────────────────────────────
@@ -90,12 +104,15 @@ const midnightTheme = EditorView.theme({
 
 const midnightHighlight = syntaxHighlighting(HighlightStyle.define([
   { tag: t.keyword, color: "#c792ea" },
-  { tag: t.variableName, color: "#82aaff" },
-  { tag: t.propertyName, color: "#addb67" },
+  { tag: [t.variableName, t.propertyName], color: "#82aaff" },
   { tag: t.string, color: "#ecc48d" },
   { tag: t.comment, color: "#637777", fontStyle: "italic" },
-  { tag: t.number, color: "#f78c6c" },
+  { tag: [t.number, t.bool, t.null], color: "#f78c6c" },
   { tag: t.function(t.variableName), color: "#82aaff" },
+  { tag: [t.typeName, t.className], color: "#ffcb8b" },
+  { tag: [t.operator, t.punctuation], color: "#7fdbca" },
+  { tag: t.tagName, color: "#7fdbca" },
+  { tag: t.attributeName, color: "#addb67" },
 ]));
 
 export const THEMES: Record<ThemeId, ThemeDefinition> = {

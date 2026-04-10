@@ -3,6 +3,7 @@ import styles from "./FooterBar.module.css";
 import { useProblemTimer } from "../../hooks/useProblemTimer";
 import { THEMES } from "../../utils/editorThemes";
 import type { ThemeId } from "../../utils/editorThemes";
+import type { DifficultyMode } from "../../types/settings";
 
 export type Framework = "react" | "react-native";
 
@@ -19,6 +20,8 @@ interface FooterBarProps {
   isSaving?: boolean;
   theme: ThemeId;
   onThemeChange: (theme: ThemeId) => void;
+  difficultyMode: DifficultyMode;
+  onDifficultyChange: (mode: DifficultyMode) => void;
 }
 
 export default function FooterBar({
@@ -34,13 +37,27 @@ export default function FooterBar({
   isSaving,
   theme,
   onThemeChange,
+  difficultyMode,
+  onDifficultyChange,
 }: FooterBarProps) {
   const { formattedTime, isOver, isTimerActive, formattedOvershoot } = useProblemTimer();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isModeMenuOpen, setIsModeMenuOpen] = useState(false);
 
   const handleThemeSelect = (newTheme: ThemeId) => {
     onThemeChange(newTheme);
     setIsSettingsOpen(false);
+  };
+
+  const handleModeSelect = (newMode: DifficultyMode) => {
+    onDifficultyChange(newMode);
+    setIsModeMenuOpen(false);
+  };
+
+  const modeDescriptions: Record<DifficultyMode, string> = {
+    easy: "Colors + Linting",
+    medium: "Colors only",
+    hard: "Plain text",
   };
 
   return (
@@ -109,6 +126,44 @@ export default function FooterBar({
           <span className={styles.icon}>⛶</span>
           FULLSCREEN
         </button>
+
+        <div className={styles.divider} />
+
+        <div className={styles.modeWrapper}>
+          <span className={styles.label}>Mode:</span>
+          <button
+            className={`${styles.activeModeBtn} ${isModeMenuOpen ? styles.activeModeBtnOpen : ''} ${styles[`mode_${difficultyMode}`]}`}
+            onClick={() => {
+              setIsModeMenuOpen(!isModeMenuOpen);
+              setIsSettingsOpen(false);
+            }}
+          >
+            {difficultyMode.toUpperCase()}
+            <span className={styles.chevronSmall}>▼</span>
+          </button>
+
+          {isModeMenuOpen && (
+            <div className={styles.modeMenu}>
+              <div className={styles.menuHeader}>SELECT DIFFICULTY</div>
+              {(['easy', 'medium', 'hard'] as const).map((m) => (
+                <button
+                  key={m}
+                  className={`${styles.menuItem} ${difficultyMode === m ? styles.menuItemActive : ''}`}
+                  onClick={() => handleModeSelect(m)}
+                >
+                  <div className={styles.menuItemContent}>
+                    <span className={`${styles.modeDot} ${styles[`dot_${m}`]}`} />
+                    <div className={styles.modeTextWrapper}>
+                      <span className={styles.modeLabel}>{m.toUpperCase()}</span>
+                      <span className={styles.modeDesc}>{modeDescriptions[m]}</span>
+                    </div>
+                  </div>
+                  {difficultyMode === m && <span className={styles.activeDot} />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
 

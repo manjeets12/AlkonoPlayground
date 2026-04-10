@@ -10,6 +10,7 @@ import TabBar from "./components/TabBar";
 import Logger from "./components/Logger";
 import FooterBar from "./layout/FooterBar";
 import ProblemPortal from "./components/ProblemPortal/ProblemPortal";
+import SolvedSuccessModal from "./components/SolvedSuccessModal/SolvedSuccessModal";
 import type { Framework } from "./layout/FooterBar";
 import { usePersistence } from "./hooks/usePersistence";
 import { formatCode } from "./utils/formatCode";
@@ -17,6 +18,7 @@ import styles from "./App.module.css";
 import { useProblemStore } from "./store/useProblemStore";
 import ProblemDetailView from "./components/ProblemDetailView/ProblemDetailView";
 import type { ThemeId } from "./utils/editorThemes";
+import type { DifficultyMode } from "./types/settings";
 
 
 
@@ -27,6 +29,7 @@ export default function App() {
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
   const [editorTheme, setEditorTheme] = useState<ThemeId>("dark");
+  const [difficultyMode, setDifficultyMode] = useState<DifficultyMode>("easy");
 
   // ── File system ────────────────────────────────────────────────────────────
   const { restoreState, updateMainContent, ...fs } = useFileSystem();
@@ -66,6 +69,7 @@ export default function App() {
 
   const handleRun = useCallback(() => {
     run(fs.snapshot(), framework);
+    useProblemStore.getState().recordRunClick();
   }, [run, fs, framework]);
 
   const handleFormat = useCallback(async () => {
@@ -100,6 +104,7 @@ export default function App() {
   return (
     <>
       <ProblemPortal />
+      <SolvedSuccessModal />
       <MainLayout
         status={status}
         leftPanel={
@@ -144,6 +149,7 @@ export default function App() {
                   key={fs.activeFile} // remount when file switches — avoids stale CodeMirror state
                   code={fs.getContent(fs.activeFile)}
                   theme={editorTheme}
+                  mode={difficultyMode}
                   onChange={handleCodeChange}
                 />
               </>
@@ -185,6 +191,8 @@ export default function App() {
               isSaving={isSaving}
               theme={editorTheme}
               onThemeChange={setEditorTheme}
+              difficultyMode={difficultyMode}
+              onDifficultyChange={setDifficultyMode}
             />
           )
         }
