@@ -2,11 +2,23 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Problem } from "../types/problem";
 import { DEFAULT_PROBLEMS } from "../data/defaultProblems";
+import { formatTime } from "../utils/time";
+
+export interface SolvedResult {
+  timeTaken: string;
+  isWithinTime: boolean;
+  overshoot?: string;
+  runHistory?: string[];
+  timestamp: number;
+}
 
 interface ProblemState {
   userProblems: Problem[];
   solvedStatuses: Record<string, boolean>;
+  solvedResults: Record<string, SolvedResult>;
   activeProblemId: string;
+  recentSolvedId: string | null;
+  currentRunTimestamps: number[];
   isPortalOpen: boolean;
   isDetailedViewOpen: boolean;
   timerStartedAt: number | null;
@@ -19,6 +31,8 @@ interface ProblemState {
   setDetailedViewOpen: (isOpen: boolean) => void;
   startSolving: () => void;
   markAsSolved: (id: string) => void;
+  recordRunClick: () => void;
+  clearRecentSolvedId: () => void;
   resetTimer: () => void;
   getActiveProblem: () => Problem;
   getProblems: () => Problem[];
@@ -29,7 +43,10 @@ export const useProblemStore = create<ProblemState>()(
     (set, get) => ({
       userProblems: [],
       solvedStatuses: {},
+      solvedResults: {},
       activeProblemId: DEFAULT_PROBLEMS[0].id,
+      recentSolvedId: null,
+      currentRunTimestamps: [],
       isPortalOpen: false,
       isDetailedViewOpen: true,
       timerStartedAt: null,
@@ -55,6 +72,7 @@ export const useProblemStore = create<ProblemState>()(
           isTimerActive: false,
           timerStartedAt: null,
           isDetailedViewOpen: true,
+          currentRunTimestamps: [],
         }));
       },
 
@@ -64,7 +82,8 @@ export const useProblemStore = create<ProblemState>()(
           isPortalOpen: false, 
           isDetailedViewOpen: true,
           isTimerActive: false,
-          timerStartedAt: null
+          timerStartedAt: null,
+          currentRunTimestamps: [],
         });
       },
 
@@ -87,21 +106,63 @@ export const useProblemStore = create<ProblemState>()(
         set({ 
           isDetailedViewOpen: false, 
           isTimerActive: true, 
-          timerStartedAt: Date.now() 
+          timerStartedAt: Date.now(),
+          currentRunTimestamps: [],
         });
       },
 
       resetTimer: () => {
-        set({ isTimerActive: false, timerStartedAt: null });
+        set({ isTimerActive: false, timerStartedAt: null, currentRunTimestamps: [] });
       },
 
       markAsSolved: (id) => {
+        const { timerStartedAt, getActiveProblem, currentRunTimestamps } = get();
+        const problem = getActiveProblem();
+        
+        let result: SolvedResult | null = null;
+        
+        if (timerStartedAt) {
+          const elapsedMs = Date.now() - timerStartedAt;
+          const elapsedSecs = Math.floor(elapsedMs / 1000);
+          const totalSecs = problem.durationMinutes * 60;
+          const isWithinTime = elapsedSecs <= totalSecs;
+          const overshootSecs = Math.max(0, elapsedSecs - totalSecs);
+
+          // Calculate run history relative to the start time
+          const runHistory = currentRunTimestamps.map(ts => {
+            const relSecs = Math.floor((ts - timerStartedAt) / 1000);
+            return formatTime(Math.max(0, relSecs));
+          });
+
+          result = {
+            timeTaken: formatTime(elapsedSecs),
+            isWithinTime,
+            overshoot: overshootSecs > 0 ? formatTime(overshootSecs) : undefined,
+            runHistory,
+            timestamp: Date.now()
+          };
+        }
+
         set((state) => ({
           solvedStatuses: { ...state.solvedStatuses, [id]: true },
+          solvedResults: result ? { ...state.solvedResults, [id]: result } : state.solvedResults,
+          recentSolvedId: id,
           isTimerActive: false,
-          timerStartedAt: null
+          timerStartedAt: null,
+          currentRunTimestamps: [],
         }));
       },
+
+      recordRunClick: () => {
+        const { isTimerActive } = get();
+        if (isTimerActive) {
+          set(state => ({
+            currentRunTimestamps: [...state.currentRunTimestamps, Date.now()]
+          }));
+        }
+      },
+
+      clearRecentSolvedId: () => set({ recentSolvedId: null }),
 
       getActiveProblem: () => {
         const { userProblems, activeProblemId, solvedStatuses } = get();

@@ -50,6 +50,14 @@ export default function ProblemViewer() {
         </div>
       </div>
 
+      {/* ── Summary Content ─────────────────────────────────────────── */}
+      <div className={styles.content}>
+        <ProblemDescription 
+          description={activeProblem.description} 
+          variant="preview" 
+        />
+      </div>
+
       {/* ── Solve Action ────────────────────────────────────────────── */}
       {isTimerActive && (
         <div className={styles.solvedActionRow}>
@@ -64,14 +72,6 @@ export default function ProblemViewer() {
           </button>
         </div>
       )}
-
-      {/* ── Summary Content ─────────────────────────────────────────── */}
-      <div className={styles.content}>
-        <ProblemDescription 
-          description={activeProblem.description} 
-          variant="preview" 
-        />
-      </div>
     </div>
   );
 }

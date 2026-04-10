@@ -3,6 +3,7 @@ import styles from "./FooterBar.module.css";
 import { useProblemTimer } from "../../hooks/useProblemTimer";
 import { THEMES } from "../../utils/editorThemes";
 import type { ThemeId } from "../../utils/editorThemes";
+import type { DifficultyMode } from "../../types/settings";
 
 export type Framework = "react" | "react-native";
 
@@ -19,6 +20,8 @@ interface FooterBarProps {
   isSaving?: boolean;
   theme: ThemeId;
   onThemeChange: (theme: ThemeId) => void;
+  difficultyMode: DifficultyMode;
+  onDifficultyChange: (mode: DifficultyMode) => void;
 }
 
 export default function FooterBar({
@@ -34,6 +37,8 @@ export default function FooterBar({
   isSaving,
   theme,
   onThemeChange,
+  difficultyMode,
+  onDifficultyChange,
 }: FooterBarProps) {
   const { formattedTime, isOver, isTimerActive, formattedOvershoot } = useProblemTimer();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -109,6 +114,22 @@ export default function FooterBar({
           <span className={styles.icon}>⛶</span>
           FULLSCREEN
         </button>
+
+        <div className={styles.divider} />
+
+        <div className={styles.difficultyGroup}>
+          <span className={styles.label}>Mode:</span>
+          {(['easy', 'medium', 'hard'] as const).map((m) => (
+            <button
+              key={m}
+              className={`${styles.difficultyBtn} ${difficultyMode === m ? styles.difficultyBtnActive : ''} ${styles[`difficulty_${m}`]}`}
+              onClick={() => onDifficultyChange(m)}
+              title={`${m.charAt(0).toUpperCase() + m.slice(1)} Mode`}
+            >
+              {m.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </div>
 
 
