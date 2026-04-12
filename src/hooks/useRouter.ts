@@ -19,17 +19,30 @@ export function useRouter() {
       const redirectPath = params.get("p");
       
       // Use pathname or the redirect path from 404 hack
-      const path = redirectPath || window.location.pathname;
-      const slug = path.replace(/^\/+/, "").replace(/\/+$/, "");
+      const rawPath = redirectPath || window.location.pathname;
+      const cleanPath = rawPath.replace(/^\/+/, "").replace(/\/+$/, "");
 
-      if (slug === "machine-coding") {
+      // Handle nested /machine-coding/problem-id
+      if (cleanPath === "machine-coding") {
         setPortalOpen(true);
-      } else if (slug) {
+      } else if (cleanPath.startsWith("machine-coding/")) {
+        const problemId = cleanPath.split("/")[1];
         const problems = getProblems();
-        const found = problems.find(p => p.id === slug);
+        const found = problems.find(p => p.id === problemId);
         if (found && found.id !== activeProblemId) {
           selectProblem(found.id);
         }
+      } else if (cleanPath) {
+        // Fallback for old FLAT URLs (legacy support)
+        const problems = getProblems();
+        const found = problems.find(p => p.id === cleanPath);
+        if (found) {
+          // Found an old URL, select it and we'll sync it to nested in the other effect
+          selectProblem(found.id);
+        }
+      } else {
+        // Root /
+        if (isPortalOpen) setPortalOpen(false);
       }
     };
 
@@ -40,7 +53,7 @@ export function useRouter() {
 
     window.addEventListener("popstate", syncStateFromURL);
     return () => window.removeEventListener("popstate", syncStateFromURL);
-  }, [getProblems, selectProblem, activeProblemId, setPortalOpen]);
+  }, [getProblems, selectProblem, activeProblemId, setPortalOpen, isPortalOpen]);
 
   // ── Sync State -> URL (On Change) ──────────────────────────────────────────
   useEffect(() => {
@@ -51,13 +64,11 @@ export function useRouter() {
     if (isPortalOpen) {
       targetPath = "/machine-coding";
     } else if (activeProblemId) {
-      targetPath = `/${activeProblemId}`;
+      targetPath = `/machine-coding/${activeProblemId}`;
     }
 
     if (window.location.pathname !== targetPath) {
-      // Use replaceState to avoid cluttering history with every tiny change, 
-      // but pushState when it's a meaningful navigation.
-      // For now, let's use pushState to allow "Back" button to work between problems.
+      // Use pushState to allow "Back" button to work between problems.
       window.history.pushState(null, "", targetPath);
     }
   }, [activeProblemId, isPortalOpen]);
