@@ -67,6 +67,7 @@ export default function FooterBar({
           onClick={onToggleLeftPanel}
           className={styles.toggleButton}
           title={isLeftPanelOpen ? "Hide left panel" : "Show left panel"}
+          aria-label={isLeftPanelOpen ? "Close sidebar" : "Open sidebar"}
         >
           {isLeftPanelOpen ? "◀ Sidebar" : "▶ Sidebar"}
         </button>
@@ -100,6 +101,7 @@ export default function FooterBar({
           className={styles.button}
           onClick={onFormat}
           title="Format code with Prettier"
+          aria-label="Format code using Prettier"
         >
           <span className={styles.icon}>✨</span>
           PRETTIER
@@ -111,6 +113,7 @@ export default function FooterBar({
           className={styles.saveButton}
           onClick={onSave}
           title="Save project (Cmd/Ctrl + S)"
+          aria-label="Save current project to local storage"
         >
           <span className={styles.icon}>💾</span>
           SAVE
@@ -122,6 +125,7 @@ export default function FooterBar({
           className={styles.button}
           onClick={onToggleFullscreen}
           title="Toggle fullscreen editor"
+          aria-label="Toggle fullscreen mode"
         >
           <span className={styles.icon}>⛶</span>
           FULLSCREEN
@@ -137,6 +141,8 @@ export default function FooterBar({
               setIsModeMenuOpen(!isModeMenuOpen);
               setIsSettingsOpen(false);
             }}
+            aria-label={`Select difficulty mode (current: ${difficultyMode})`}
+            aria-expanded={isModeMenuOpen}
           >
             {difficultyMode.toUpperCase()}
             <span className={styles.chevronSmall}>▼</span>
@@ -197,6 +203,8 @@ export default function FooterBar({
             <title>Editor Settings</title>
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            <title>Editor Settings</title>
+            <desc>Editor Settings and Theme Selector</desc>
           </svg>
 
           {isSettingsOpen && (
@@ -221,6 +229,7 @@ export default function FooterBar({
           onClick={onToggleRightPanel}
           className={styles.toggleButton}
           title={isRightPanelOpen ? "Hide right panel" : "Show right panel"}
+          aria-label={isRightPanelOpen ? "Close preview" : "Open preview"}
         >
           {isRightPanelOpen ? "PREVIEW ▶" : "PREVIEW ◀"}
         </button>

@@ -28,12 +28,15 @@ export default function MainLayout({
 
   return (
     <div className={styles.root}>
+      <h1 className={styles.visuallyHidden}>
+        AlkonoPlayground — Free React & React Native Machine Coding Platform
+      </h1>
       {/* ── Titlebar ────────────────────────────────────────────────── */}
       <header className={styles.header}>
         {/* Brand */}
-        <span className={styles.brand}>
+        <span className={styles.brand} aria-label="AlkonoPlayground home">
           <span className={styles.brandDot} />
-          RN Playground
+          AlkonoPlayground
         </span>
 
         <span className={styles.headerSpacer} />

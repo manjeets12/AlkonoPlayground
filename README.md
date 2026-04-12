@@ -1,6 +1,6 @@
 # AlkonoPlayground 🚀
 
-AlkonoPlayground is a high-performance, browser-based IDE designed for building and testing React and React Native applications. It is built as a **free tool** specifically tailored for developers to **practice and prepare for technical interviews** in a realistic environment.
+AlkonoPlayground is a high-performance, browser-based machine coding platform designed for practicing React and React Native problems. It is built as a **free tool** specifically tailored for developers to **prepare for technical interviews** by solving real-world challenges in a realistic environment.
 
 ## 🎯 Project Goals
 
