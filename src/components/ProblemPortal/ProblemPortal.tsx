@@ -114,6 +114,16 @@ export default function ProblemPortal() {
               >
                 + Create New Challenge
               </button>
+
+              <div className={styles.seoFooter}>
+                <h4>About AlkonoPlayground</h4>
+                <p>
+                  AlkonoPlayground is a free, browser-based machine coding platform designed specifically for 
+                  frontend developers preparing for React and React Native technical interviews. 
+                  Practice real-world coding challenges, master mobile UI patterns, and refine your 
+                  problem-solving skills in an environment that simulates professional machine coding rounds.
+                </p>
+              </div>
             </>
           ) : (
             <form onSubmit={handleSubmit} className={styles.form}>
