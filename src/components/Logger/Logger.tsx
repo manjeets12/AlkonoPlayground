@@ -162,6 +162,7 @@ export default function Logs({ logs, onClear }: LogsProps) {
         <button
           onClick={(e) => { e.stopPropagation(); onClear(); }}
           disabled={logs.length === 0}
+          aria-label="Clear console logs"
           className={styles.clearButton}
         >
           clear
@@ -169,6 +170,7 @@ export default function Logs({ logs, onClear }: LogsProps) {
 
         <button
           onClick={(e) => { e.stopPropagation(); setIsExpanded((v) => !v); }}
+          aria-label={isExpanded ? "Collapse console" : "Expand console"}
           className={`${styles.clearButton} ${styles.collapseButton}`}
         >
           {isExpanded ? "▼" : "▲"}
