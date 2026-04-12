@@ -8,7 +8,6 @@ export default function ProblemPortal() {
   const { 
     getProblems, 
     activeProblemId, 
-    isPortalOpen, 
     setPortalOpen, 
     addProblem, 
     selectProblem, 
@@ -26,8 +25,6 @@ export default function ProblemPortal() {
     level: "medium" as ProblemLevel,
     imageUrl: "",
   });
-
-  if (!isPortalOpen) return null;
 
   const filteredProblems = problems.filter(p => levelFilter === "all" || p.level === levelFilter);
 

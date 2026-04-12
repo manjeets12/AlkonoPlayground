@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 
 import { useFileSystem } from "./hooks/useFileSystem";
 import { useExecutor } from "./hooks/useExecutor";
@@ -98,13 +98,26 @@ export default function App() {
     }
   }, [isFullscreen]);
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsFullscreen(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const { isPortalOpen } = useProblemStore();
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   const { isDetailedViewOpen } = useProblemStore();
 
   return (
     <>
-      <ProblemPortal />
+      {isPortalOpen && <ProblemPortal />}
       <SolvedSuccessModal />
       <MainLayout
         status={status}
