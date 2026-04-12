@@ -17,15 +17,14 @@ import { formatCode } from "./utils/formatCode";
 import styles from "./App.module.css";
 import { useProblemStore } from "./store/useProblemStore";
 import { useSEOMetadata } from "./hooks/useSEOMetadata";
+import { useRouter } from "./hooks/useRouter";
 import ProblemDetailView from "./components/ProblemDetailView/ProblemDetailView";
 import type { ThemeId } from "./utils/editorThemes";
 import type { DifficultyMode } from "./types/settings";
 
-
-
-
 export default function App() {
   useSEOMetadata();
+  useRouter();
   const [framework, setFramework] = useState<Framework>("react");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
