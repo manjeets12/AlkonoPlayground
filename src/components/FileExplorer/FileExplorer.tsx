@@ -301,6 +301,7 @@ function TreeNodeRow({
           >
             <button
               title="Rename"
+              aria-label="Rename file or folder"
               onClick={startRename}
               className={styles.closeButton}
             >
@@ -309,6 +310,7 @@ function TreeNodeRow({
             {node.kind === "file" && (
               <button
                 title="Delete"
+                aria-label="Delete file"
                 onClick={handleDelete}
                 style={{ color: "#f5524a" }}
                 className={styles.closeButton}
@@ -422,6 +424,7 @@ export default function FileExplorer({
           <button
             onClick={() => startCreate("file")}
             title="New File"
+            aria-label="Create new file"
             className={styles.headerButton}
           >
             📄
@@ -429,6 +432,7 @@ export default function FileExplorer({
           <button
             onClick={() => startCreate("dir")}
             title="New Folder"
+            aria-label="Create new folder"
             className={styles.headerButton}
           >
             📁

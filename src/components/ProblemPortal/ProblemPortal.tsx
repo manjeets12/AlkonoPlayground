@@ -56,7 +56,7 @@ export default function ProblemPortal() {
       <div className={styles.drawer} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h2>{isCreating ? "New Challenge" : "Select Problem"}</h2>
-          <button className={styles.closeBtn} onClick={() => setPortalOpen(false)}>✕</button>
+          <button className={styles.closeBtn} onClick={() => setPortalOpen(false)} aria-label="Close portal">✕</button>
         </div>
 
         <div className={styles.content}>
