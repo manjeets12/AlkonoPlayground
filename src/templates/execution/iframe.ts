@@ -25,7 +25,7 @@ export function buildExecutionIframe(
   <div id="error-overlay"></div>
   <div id="root"></div>
 
-  <script src="./vendor.bundle.js"></script>
+  <script src="${import.meta.env.BASE_URL}vendor.bundle.js"></script>
 
   <script>${globalScript}</script>
 
