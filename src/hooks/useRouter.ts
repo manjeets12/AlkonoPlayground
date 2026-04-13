@@ -18,8 +18,17 @@ export function useRouter() {
       const params = new URLSearchParams(window.location.search);
       const redirectPath = params.get("p");
       
-      // Use pathname or the redirect path from 404 hack
-      const rawPath = redirectPath || window.location.pathname;
+      const baseUrl = import.meta.env.BASE_URL;
+      let rawPath = redirectPath || window.location.pathname;
+
+      // Strip base URL from the start if it exists
+      if (rawPath.startsWith(baseUrl)) {
+        rawPath = rawPath.slice(baseUrl.length);
+      } else if (baseUrl !== "/" && rawPath.startsWith("/")) {
+        // Handle cases where the path might start with / but doesn't include the base (redundant safety)
+        // Usually index.html handles this via redirect if using the 404 hack
+      }
+
       const cleanPath = rawPath.replace(/^\/+/, "").replace(/\/+$/, "");
 
       // Handle nested /machine-coding/problem-id
@@ -37,7 +46,6 @@ export function useRouter() {
         const problems = getProblems();
         const found = problems.find(p => p.id === cleanPath);
         if (found) {
-          // Found an old URL, select it and we'll sync it to nested in the other effect
           selectProblem(found.id);
         }
       } else {
@@ -57,18 +65,19 @@ export function useRouter() {
 
   // ── Sync State -> URL (On Change) ──────────────────────────────────────────
   useEffect(() => {
-    // Skip if we're in the middle of initial mount sync
     if (isInitialLoad.current) return;
 
-    let targetPath = "/";
+    const baseUrl = import.meta.env.BASE_URL; // e.g. "/AlkonoPlayground/" or "/"
+    let targetPath = baseUrl;
+
     if (isPortalOpen) {
-      targetPath = "/machine-coding";
+      targetPath = `${baseUrl}machine-coding`;
     } else if (activeProblemId) {
-      targetPath = `/machine-coding/${activeProblemId}`;
+      targetPath = `${baseUrl}machine-coding/${activeProblemId}`;
     }
 
+    // Direct string comparison of full pathnames
     if (window.location.pathname !== targetPath) {
-      // Use pushState to allow "Back" button to work between problems.
       window.history.pushState(null, "", targetPath);
     }
   }, [activeProblemId, isPortalOpen]);
