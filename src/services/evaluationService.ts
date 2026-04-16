@@ -123,12 +123,14 @@ export function evaluateSolution({
   // Verdict Handling
   let verdict = "";
   let summary = "";
+  let isHighRisk = false;
 
   if (runCount === 0) {
     totalScore = Math.min(totalScore, 6.5);
     verdict = FEEDBACK_TEMPLATES.ZERO_RUNS.VERDICT;
     summary = "Solution lacks validation. Unconfirmed logic leads to high risk in production.";
     weaknesses.push(...FEEDBACK_TEMPLATES.ZERO_RUNS.WEAKNESSES);
+    isHighRisk = true;
   } else {
     if (totalScore >= VERDICTS.EXCELLENT.MIN_SCORE) {
       verdict = VERDICTS.EXCELLENT.LABEL;
@@ -187,6 +189,7 @@ export function evaluateSolution({
       planningRatio,
     },
     framework,
+    isHighRisk,
     timestamp: Date.now(),
   };
 }

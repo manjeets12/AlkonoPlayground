@@ -84,7 +84,7 @@ export const FEEDBACK_TEMPLATES = {
   ],
   ZERO_RUNS: {
     VERDICT: "Borderline – Lacks validation during development",
-    BEHAVIOR: "No execution runs recorded. Solution was not validated durante development, which is high risk in real interviews.",
+    BEHAVIOR: "No execution runs recorded. Solution was not validated during development, which is high risk in real interviews.",
     WEAKNESSES: ["No validation via execution", "High risk of untested edge cases"],
   },
   BEHAVIOR: {

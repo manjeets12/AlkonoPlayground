@@ -97,8 +97,11 @@ export default function SolvedSuccessModal() {
             <span className={styles.scoreValue}>{report.score.toFixed(1)}</span>
             <span className={styles.scoreMax}>/ 10</span>
           </div>
-          <div className={styles.verdictCard}>
-            <div className={styles.verdictLabel}>{report.verdict}</div>
+          <div className={`${styles.verdictCard} ${report.isHighRisk ? styles.highRiskVerdict : ""}`}>
+            <div className={styles.verdictHeader}>
+              <div className={styles.verdictLabel}>{report.verdict}</div>
+              {report.isHighRisk && <span className={styles.highRiskBadge}>HIGH RISK</span>}
+            </div>
             <div className={styles.summaryText}>{report.summary}</div>
           </div>
         </div>
@@ -109,7 +112,9 @@ export default function SolvedSuccessModal() {
             <span>⏱ Time:</span> <span className={styles.statValue}>{result.timeTaken}</span>
           </div>
           <div className={styles.statItem}>
-            <span>🔁 Runs:</span> <span className={styles.statValue}>{result.runHistory?.length || 0}</span>
+            <span>🔁 Runs:</span> <span className={`${styles.statValue} ${report.stats.runCount === 0 ? styles.dangerText : ""}`}>
+              {report.stats.runCount === 0 && "⚠️ "}{report.stats.runCount}
+            </span>
           </div>
           <div className={styles.statItem}>
             <span>🧠 Planning:</span> <span className={styles.statValue}>{planningPercent}%</span>

@@ -27,6 +27,7 @@ export interface EvaluationReport {
     planningRatio: number;
   };
   framework: string;
+  isHighRisk?: boolean;
   timestamp: number;
 }
 
