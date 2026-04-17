@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import type { ExecutionStatus } from "../../hooks/useExecutor";
 import styles from "./MainLayout.module.css";
+import ProfileDropdown from "../../components/ProfileDropdown/ProfileDropdown";
+import MyReportsModal from "../../components/MyReportsModal/MyReportsModal";
 
 interface MainLayoutProps {
   leftPanel?: ReactNode;
@@ -28,12 +30,15 @@ export default function MainLayout({
 
   return (
     <div className={styles.root}>
+      <h1 className={styles.visuallyHidden}>
+        AlkonoPlayground — Free React & React Native Machine Coding Platform
+      </h1>
       {/* ── Titlebar ────────────────────────────────────────────────── */}
       <header className={styles.header}>
         {/* Brand */}
-        <span className={styles.brand}>
+        <span className={styles.brand} aria-label="AlkonoPlayground home">
           <span className={styles.brandDot} />
-          RN Playground
+          AlkonoPlayground
         </span>
 
         <span className={styles.headerSpacer} />
@@ -49,6 +54,10 @@ export default function MainLayout({
                   : "✕ error"}
             </span>
           )}
+        </div>
+
+        <div className={styles.headerActions}>
+          <ProfileDropdown />
         </div>
       </header>
 
@@ -69,6 +78,9 @@ export default function MainLayout({
 
       {/* ── Footer ────────────────────────────────────────────── */}
       {footer}
+
+      {/* ── Modals ─────────────────────────────────────────────── */}
+      <MyReportsModal />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 
 import { useFileSystem } from "./hooks/useFileSystem";
 import { useExecutor } from "./hooks/useExecutor";
@@ -16,14 +16,16 @@ import { usePersistence } from "./hooks/usePersistence";
 import { formatCode } from "./utils/formatCode";
 import styles from "./App.module.css";
 import { useProblemStore } from "./store/useProblemStore";
+import { useSEOMetadata } from "./hooks/useSEOMetadata";
+import { useRouter } from "./hooks/useRouter";
 import ProblemDetailView from "./components/ProblemDetailView/ProblemDetailView";
 import type { ThemeId } from "./utils/editorThemes";
 import type { DifficultyMode } from "./types/settings";
-
-
-
+import { ActionContext } from "./context/ActionContext";
 
 export default function App() {
+  useSEOMetadata();
+  useRouter();
   const [framework, setFramework] = useState<Framework>("react");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
@@ -97,13 +99,27 @@ export default function App() {
     }
   }, [isFullscreen]);
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsFullscreen(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const { isPortalOpen } = useProblemStore();
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   const { isDetailedViewOpen } = useProblemStore();
 
   return (
     <>
-      <ProblemPortal />
+    <ActionContext.Provider value={{ getFilesSnapshot: fs.snapshot, framework }}>
+      {isPortalOpen && <ProblemPortal />}
       <SolvedSuccessModal />
       <MainLayout
         status={status}
@@ -199,6 +215,7 @@ export default function App() {
 
 
       />
+    </ActionContext.Provider>
     </>
   );
 }
