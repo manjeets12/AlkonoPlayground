@@ -21,6 +21,7 @@ import { useRouter } from "./hooks/useRouter";
 import ProblemDetailView from "./components/ProblemDetailView/ProblemDetailView";
 import type { ThemeId } from "./utils/editorThemes";
 import type { DifficultyMode } from "./types/settings";
+import { ActionContext } from "./context/ActionContext";
 
 export default function App() {
   useSEOMetadata();
@@ -117,6 +118,7 @@ export default function App() {
 
   return (
     <>
+    <ActionContext.Provider value={{ getFilesSnapshot: fs.snapshot, framework }}>
       {isPortalOpen && <ProblemPortal />}
       <SolvedSuccessModal />
       <MainLayout
@@ -213,6 +215,7 @@ export default function App() {
 
 
       />
+    </ActionContext.Provider>
     </>
   );
 }
