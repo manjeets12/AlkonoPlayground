@@ -6,7 +6,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 10010;
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -225,6 +225,7 @@
 
 .signalsSection {
   margin-bottom: 24px;
+  position: relative;
 }
 
 .signalsSubtitle {
@@ -252,6 +253,77 @@
 .signalItem span {
   color: #3b82f6;
   font-weight: 700;
+}
+
+.fileSignalsDetails {
+  margin-top: 0;
+}
+
+.fileSignalsSummary {
+  position: absolute;
+  top: -4px;
+  right: 0;
+  font-size: 11px;
+  color: #3b82f6;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  list-style: none; /* Hide default arrow in some browsers */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.fileSignalsSummary::-webkit-details-marker {
+  display: none;
+}
+
+.fileSignalsSummary:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.fileSignalsSummary::before {
+  content: '▶';
+  font-size: 8px;
+  transition: transform 0.2s;
+}
+
+.fileSignalsDetails[open] .fileSignalsSummary::before {
+  transform: rotate(90deg);
+}
+
+.fileSignalsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.fileSignalSection {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.fileSignalHeader {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.fileName {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 /* ── Row 6+: Actions ─────────────────────────────────────────────────────── */
@@ -318,13 +390,44 @@
   margin-bottom: 12px;
 }
 
-.buttonGroup {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1.5fr;
-  gap: 10px;
+.savedIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #10b981;
+  font-weight: 700;
+  margin: 0;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  animation: premiumPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
 }
 
-.primaryBtn, .secondaryBtn, .copyBtn {
+@keyframes premiumPulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0px rgba(16, 185, 129, 0); }
+  50% { opacity: 0.8; box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+}
+
+.check {
+  font-weight: 900;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.copyBtnGroup {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+}
+
+.primaryBtn, .secondaryBtn, .copyBtn, .closeBtn {
   padding: 10px;
   border-radius: 8px;
   font-size: 12px;
@@ -356,14 +459,13 @@
 }
 
 .closeBtn {
-  margin-top: 12px;
-  padding: 8px;
-  background: transparent;
-  color: #64748b;
-  border: none;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
+  background: #334155;
+  color: #f8fafc;
+  padding: 10px 20px;
+}
+
+.closeBtn:hover {
+  background: #475569;
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

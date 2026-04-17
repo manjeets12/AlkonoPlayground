@@ -87,6 +87,12 @@ export const FEEDBACK_TEMPLATES = {
     BEHAVIOR: "No execution runs recorded. Solution was not validated during development, which is high risk in real interviews.",
     WEAKNESSES: ["No validation via execution", "High risk of untested edge cases"],
   },
+  HIGH_RISK: {
+    VERDICT: "High Risk – Suspiciously fast completion",
+    BEHAVIOR: "Extremely fast completion with minimal validation. This pattern is frequently associated with pre-solved or non-original solutions.",
+    WEAKNESSES: ["Suspiciously fast completion", "Lack of incremental development signals", "Unverified logic"],
+    SUMMARY: "The solution was completed in less than 1/3 of the allotted time with almost no execution runs. This lacks the procedural validation required for production-ready code."
+  },
   BEHAVIOR: {
     BALANCED: "A balanced and methodical approach.",
     TRIAL_ERROR: "Heavy reliance on trial and error. Try to reason about logic before running.",

@@ -1,7 +1,6 @@
 import type { Problem } from "../types/problem";
-import type { EvaluationReport, EvaluationParams, CodeSignals } from "../types/evaluation";
+import type { EvaluationReport, EvaluationParams, CodeSignals, FileSignal } from "../types/evaluation";
 import type { FileMap } from "../types/framework";
-import type { Framework } from "../types/framework";
 import { 
   EVALUATION_THRESHOLDS, 
   EVALUATION_SCORES, 
@@ -46,6 +45,56 @@ export function extractCodeSignals(files: FileMap): CodeSignals {
     utilities,
     componentBreakdown
   };
+}
+
+export function extractFileSignals(files: FileMap): FileSignal[] {
+  const fileList = Object.keys(files).filter(f => !f.endsWith('.gitkeep'));
+  
+  // Find interesting files: favor App.tsx, index.js, or largest ones by checking content length
+  const interestingFiles = fileList
+    .map(path => ({ path, content: files[path], length: files[path].length }))
+    .sort((a, b) => b.length - a.length)
+    .slice(0, 2);
+
+  return interestingFiles.map(({ path, content }) => {
+    const lines = content.split('\n');
+    const loc = lines.length;
+
+    // Modularity heuristic: count exports and functions
+    const exportCount = (content.match(/export /g) || []).length;
+    const functionCount = (content.match(/function /g) || []).length + (content.match(/=>/g) || []).length;
+    let modularity: "High" | "Medium" | "Low" = "Low";
+    if (exportCount > 2 || functionCount > 3) modularity = "High";
+    else if (exportCount > 0 || functionCount > 1) modularity = "Medium";
+
+    // Readability heuristic: average line length, and comment lines
+    const commentCount = (content.match(/\/\//g) || []).length + (content.match(/\/\*/g) || []).length;
+    let readability: "High" | "Medium" | "Low" = "Medium";
+    if (loc > 0 && commentCount / loc > 0.1) readability = "High";
+    else if (loc > 150 && commentCount < 2) readability = "Low";
+
+    // Reusability heuristic: generic typings, props, hooks
+    const hasProps = content.includes('interface ') || content.includes('type ') || content.includes('Props');
+    const hasHooks = content.includes('use') && content.includes('memo');
+    let reusability: "High" | "Medium" | "Low" = "Low";
+    if (hasProps && hasHooks) reusability = "High";
+    else if (hasProps || hasHooks) reusability = "Medium";
+
+    // Complexity heuristic: high lines of code without enough functions means complex block
+    let complexity: "High" | "Medium" | "Low" = "Medium";
+    if (loc > 200 && functionCount < 3) complexity = "High";
+    else if (loc < 50) complexity = "Low";
+
+    return {
+      filePath: path,
+      signals: {
+        modularity,
+        readability,
+        reusability,
+        complexity
+      }
+    };
+  });
 }
 
 export function evaluateSolution({
@@ -125,11 +174,15 @@ export function evaluateSolution({
   let summary = "";
   let isHighRisk = false;
 
-  if (runCount === 0) {
-    totalScore = Math.min(totalScore, 6.5);
-    verdict = FEEDBACK_TEMPLATES.ZERO_RUNS.VERDICT;
-    summary = "Solution lacks validation. Unconfirmed logic leads to high risk in production.";
-    weaknesses.push(...FEEDBACK_TEMPLATES.ZERO_RUNS.WEAKNESSES);
+  const isExtremeSpeed = timeRatio < 0.10 && runCount < 5;
+  const isSuspiciousSpeed = timeRatio < 0.33 && runCount < 3;
+
+  if (isExtremeSpeed || isSuspiciousSpeed || runCount === 0) {
+    totalScore = Math.min(totalScore, 3.0);
+    verdict = FEEDBACK_TEMPLATES.HIGH_RISK.VERDICT;
+    summary = FEEDBACK_TEMPLATES.HIGH_RISK.SUMMARY;
+    behaviorAnalysis = FEEDBACK_TEMPLATES.HIGH_RISK.BEHAVIOR;
+    weaknesses.push(...FEEDBACK_TEMPLATES.HIGH_RISK.WEAKNESSES);
     isHighRisk = true;
   } else {
     if (totalScore >= VERDICTS.EXCELLENT.MIN_SCORE) {
@@ -180,6 +233,7 @@ export function evaluateSolution({
     behaviorAnalysis,
     improvementTips,
     codeSignals: extractCodeSignals(files),
+    fileSignals: extractFileSignals(files),
     scoreTransparencyNote: SCORE_TRANSPARENCY_NOTE,
     stats: {
       timeTaken: formatDuration(timeTakenMs),

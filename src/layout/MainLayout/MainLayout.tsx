@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import type { ExecutionStatus } from "../../hooks/useExecutor";
 import styles from "./MainLayout.module.css";
+import ProfileDropdown from "../../components/ProfileDropdown/ProfileDropdown";
+import MyReportsModal from "../../components/MyReportsModal/MyReportsModal";
 
 interface MainLayoutProps {
   leftPanel?: ReactNode;
@@ -53,6 +55,10 @@ export default function MainLayout({
             </span>
           )}
         </div>
+
+        <div className={styles.headerActions}>
+          <ProfileDropdown />
+        </div>
       </header>
 
       {/* ── Main body ────────────────────────────────────────── */}
@@ -72,6 +78,9 @@ export default function MainLayout({
 
       {/* ── Footer ────────────────────────────────────────────── */}
       {footer}
+
+      {/* ── Modals ─────────────────────────────────────────────── */}
+      <MyReportsModal />
     </div>
   );
 }

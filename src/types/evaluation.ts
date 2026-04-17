@@ -8,6 +8,16 @@ export interface CodeSignals {
   componentBreakdown: "Minimal" | "Moderate" | "Well structured";
 }
 
+export interface FileSignal {
+  filePath: string;
+  signals: {
+    modularity: "High" | "Medium" | "Low";
+    readability: "High" | "Medium" | "Low";
+    reusability: "High" | "Medium" | "Low";
+    complexity: "High" | "Medium" | "Low";
+  };
+}
+
 export interface EvaluationReport {
   score: number;
   verdict: string;
@@ -17,6 +27,7 @@ export interface EvaluationReport {
   behaviorAnalysis: string;
   improvementTips: string[];
   codeSignals: CodeSignals;
+  fileSignals?: FileSignal[];
   scoreTransparencyNote: string;
   confidenceGap?: string;
   stats: {

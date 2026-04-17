@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "vendor:dev": "NODE_ENV=development node esbuild.vendor.config.js",
-    "vendor:build": "NODE_ENV=production node esbuild.vendor.config.js"
+    "vendor:build": "NODE_ENV=production node esbuild.vendor.config.js",
+    "production": "npm install && npm run vendor:build && npm run build && npm run preview"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.5",
